@@ -34,3 +34,27 @@ class NeuralNet(object):
             # Sigmoid is the default activation function for neural nets
             data = sigmoid(np.dot(data, weight))
         return data
+
+    @staticmethod
+    def cost(weights, input, expected_output):
+        """
+        Find the cost of the given weights, based on input and the expected_output.
+        """
+        input = np.asarray(input)
+        expected_output = np.asarray(expected_output)
+        # Single row "matrixes" are one-dimensional, not two,
+        # so len() does not work as expected
+        if len(input.shape) == 1:
+            num_samples = 1
+        else:
+            num_samples = len(input)
+        for weight in weights:
+            # Sigmoid is the default activation function for neural nets
+            result = sigmoid(input.dot(weight))
+            input = result
+        # This cost function is convex, unlike squared error,
+        # which makes gradient descent easier
+        error = (-expected_output * np.log(result) -
+                 (1 - expected_output) * np.log(1 - result))
+        cost = error.sum() / num_samples
+        return cost
