@@ -21,7 +21,7 @@ class NeuralNet(object):
             self.weights.append(
                 np.random.uniform(-1, 1, [layers[i], layers[i + 1]]))
 
-    def compute(self, data):
+    def __call__(self, data):
         """
         Compute the network's function based on the input data.
 
