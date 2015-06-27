@@ -38,7 +38,8 @@ class NeuralNet(object):
     @staticmethod
     def cost(weights, input, expected_output):
         """
-        Find the cost of the given weights, based on input and the expected_output.
+        Find the cost of the given weights,
+        based on input and the expected_output.
         """
         input = np.asarray(input)
         expected_output = np.asarray(expected_output)
@@ -48,13 +49,27 @@ class NeuralNet(object):
             num_samples = 1
         else:
             num_samples = len(input)
+        inputs = []
+        results = []
         for weight in weights:
             # Sigmoid is the default activation function for neural nets
+            inputs.append(input)
             result = sigmoid(input.dot(weight))
+            results.append(result)
             input = result
         # This cost function is convex, unlike squared error,
         # which makes gradient descent easier
         error = (-expected_output * np.log(result) -
                  (1 - expected_output) * np.log(1 - result))
         cost = error.sum() / num_samples
-        return cost
+        delta = result - expected_output
+        deltas = [delta]
+        for i in reversed(range(0, len(weights) - 1)):
+            # g(x) (1- g(x)) is the derivative of sigmoid
+            delta = (delta.dot(weights[i+1].transpose()) *
+                     results[i] * (1 - results[i]))
+            deltas.insert(0, delta)
+        gradients = []
+        for i in range(0, len(deltas)):
+            gradients.append(inputs[i].transpose().dot(deltas[i]))
+        return cost, gradients
