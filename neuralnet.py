@@ -1,5 +1,6 @@
 """Homegrown Neural Network Framework"""
 import numpy as np
+from scipy.optimize import minimize, check_grad
 from scipy.special import expit as sigmoid
 
 
@@ -35,6 +36,17 @@ class NeuralNet(object):
             data = sigmoid(np.dot(data, weight))
         return data
 
+    def check_gradient(self, input, expected_output):
+        array, shapes = NeuralNet.unroll(self.weights)
+        fun = lambda x: NeuralNet.cost(NeuralNet.roll(x, shapes), 
+                                       input,
+                                       expected_output)[0]
+        grad = lambda x: NeuralNet.unroll(
+                NeuralNet.cost(
+                    NeuralNet.roll(x, shapes), input, expected_output)[1])[0]
+        x = NeuralNet.roll(grad(array), shapes)[0]
+        return check_grad(fun, grad, array)
+
     @staticmethod
     def cost(weights, input, expected_output):
         """
@@ -69,7 +81,32 @@ class NeuralNet(object):
             delta = (delta.dot(weights[i+1].transpose()) *
                      results[i] * (1 - results[i]))
             deltas.insert(0, delta)
+        for delta in deltas:
+            print(delta.shape)
         gradients = []
         for i in range(0, len(deltas)):
-            gradients.append(inputs[i].transpose().dot(deltas[i]))
+            gradients.append(inputs[i].transpose().dot(deltas[i]) / num_samples)
+        for grad in gradients:
+            print(grad.shape)
+        print("")
         return cost, gradients
+
+    @staticmethod
+    def unroll(weights):
+        w = weights[0].ravel()
+        shapes = [weights[0].shape]
+        for weight in weights[1:]:
+            shapes.append(weight.shape)
+            w = np.concatenate((w, weight.ravel()))
+        return w, shapes
+
+    @staticmethod
+    def roll(array, shapes):
+        splits = [0]
+        for shape in shapes:
+            splits.append(shape[0] * shape[1] + splits[len(splits)-1])
+        splits = splits[1:len(splits)-1]
+        weights = np.split(array, splits)
+        for i in range(len(weights)):
+            weights[i].shape = shapes[i]
+        return weights
