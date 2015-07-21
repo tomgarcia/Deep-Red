@@ -1,4 +1,6 @@
 """Homegrown Neural Network Framework"""
+import sys
+
 import numpy as np
 from scipy.optimize import minimize, check_grad
 from scipy.special import expit as sigmoid
@@ -42,6 +44,7 @@ class NeuralNet(object):
         Train the neural net using the given input and output.
         """
         array, shapes = NeuralNet.unroll(self.weights)
+
         def fun(x):
             cost, grad = NeuralNet.cost(NeuralNet.roll(x, shapes),
                                         input, expected_output)
@@ -89,14 +92,17 @@ class NeuralNet(object):
             input = result
         # This cost function is convex, unlike squared error,
         # which makes gradient descent easier
+        # float_info.min is used to prevent an exception
+        # when result == 1 (only happens because of a rounding error)
         error = (-expected_output * np.log(result) -
-                 (1 - expected_output) * np.log(1 - result))
+                 (1 - expected_output) *
+                 np.log(1 - result + sys.float_info.min))
         cost = error.sum() / num_samples
         delta = result - expected_output
         deltas = [delta]
         for i in reversed(range(0, len(weights) - 1)):
             # g(x) (1- g(x)) is the derivative of sigmoid
-            delta = (delta.dot(weights[i+1][1:,].transpose()) *
+            delta = (delta.dot(weights[i+1][1:, ].transpose()) *
                      results[i] * (1 - results[i]))
             deltas.insert(0, delta)
         gradients = []

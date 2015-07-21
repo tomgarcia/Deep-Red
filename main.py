@@ -1,15 +1,16 @@
 #!/usr/bin/python3
+"""
+Temporary script for testing ai.
+"""
 import numpy as np
-from random import randrange
 
 from bot import Bot
-from card import format_as_input
+from card import format_as_input, deal
 
 print("Starting Training")
-ai = Bot([])
+ai = Bot(deal(5))
 for i in range(100):
-    card1 = (randrange(13), randrange(4))
-    card2 = (randrange(13), randrange(4))
+    card1, card2 = deal(2)
     same_rank = card1[0] == card2[0]
     same_suit = card1[1] == card2[1]
     output = int(same_rank or same_suit)
