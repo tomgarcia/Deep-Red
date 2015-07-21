@@ -2,10 +2,8 @@
 """
 Temporary script for testing ai.
 """
-import numpy as np
-
 from bot import Bot
-from card import format_as_input, deal
+from card import deal
 
 print("Starting Training")
 ai = Bot(deal(5))
@@ -18,10 +16,11 @@ for i in range(100):
 print("Training Complete")
 net = ai.net
 while True:
-    data = [int(s) for s in input("Enter input: ").split()]
-    card = format_as_input((data[0], data[1]))
-    prev_card = format_as_input((data[2], data[3]))
-    matching = [int(card[0] == prev_card[0]),
-                int(card[1] == prev_card[1])]
-    data = np.array([card + prev_card + matching])
-    print(net(data))
+    data = [int(s) for s in input("Enter top of pile: ").split()]
+    prev_card = (data[0], data[1])
+    print(ai.hand)
+    card = ai.play(prev_card)
+    print(card)
+    ai.add_card(*deal(1))
+    correct_output = int(input("Valid?(1/0): "))
+    ai.add_sample(card, prev_card, (correct_output,))

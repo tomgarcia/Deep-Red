@@ -1,8 +1,10 @@
 """
 Programmer-friendly interface to the neural network.
 """
+import numpy as np
+
 from neuralnet import NeuralNet
-from card import format_as_input
+from card import format_input
 
 
 class Bot(object):
@@ -17,18 +19,13 @@ class Bot(object):
         hands are not currently used for anything.
         """
         self.hand = hand
-        card_len = len(format_as_input((0, 0)))
-        input_size = 2 * card_len + 2
+        input_size = len(format_input((0, 0), (0, 0)))
         self.net = NeuralNet(input_size, 2, 1)
         self.samples = ([], [])
 
     def add_sample(self, card, prev_card, outcome):
         """Adds a new sample for the bot to train on."""
-        card = format_as_input(card)
-        prev_card = format_as_input(prev_card)
-        matching = [int(card[0] == prev_card[0]),
-                    int(card[1] == prev_card[1])]
-        input = card + prev_card + matching
+        input = format_input(card, prev_card)
         self.samples[0].append(input)
         self.samples[1].append(outcome)
         self.net.train(self.samples[0], self.samples[1])
@@ -39,3 +36,12 @@ class Bot(object):
         for anything.
         """
         self.hand.append(card)
+
+    def play(self, prev_card):
+        """
+        Bot plays the best card from its hand, based on the card
+        on top of the pile.
+        """
+        input = [format_input(card, prev_card) for card in self.hand]
+        output = self.net(input)
+        return self.hand.pop(np.argmax(output))

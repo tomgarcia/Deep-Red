@@ -2,7 +2,7 @@
 from random import randrange
 
 
-def format_as_input(card):
+def format_card(card):
     """
     Transform a simple representation (rank, suit) of a card
     into a format that is more useful for a neuralnet.
@@ -14,6 +14,14 @@ def format_as_input(card):
     rank[card[0]] = 1
     suit[card[1]] = 1
     return list(card) + rank + suit
+
+
+def format_input(card, prev_card):
+    card = format_card(card)
+    prev_card = format_card(prev_card)
+    matching = [int(card[0] == prev_card[0]),
+                int(card[1] == prev_card[1])]
+    return card + prev_card + matching
 
 
 def deal(num_cards):
