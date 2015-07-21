@@ -32,8 +32,7 @@ class Bot(object):
 
     def add_card(self, card):
         """
-        Adds a card to the bot's hand. Currently not used
-        for anything.
+        Adds a card to the bot's hand.
         """
         self.hand.append(card)
 

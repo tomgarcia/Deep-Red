@@ -9,15 +9,17 @@ from scipy.special import expit as sigmoid
 class NeuralNet(object):
     """A multi-layer, feed-forward neural network."""
 
-    def __init__(self, *layers):
+    def __init__(self, *layers, lambda_=0.1):
         """
         Parameters are a series of integers, each representing
         the number of nodes in one layer of the network. The first
         parameter is the number of inputs and the last is the number
         of outputs, so there is a minimum of two parameters.
+        The lambda parameter is the regularization coefficient.
         """
         if len(layers) < 2:
             raise Exception("Neural Net requires at least 2 layers")
+        self.lambda_ = 0.1
         self.weights = []
         for i in range(len(layers) - 1):
             # TODO Find correct range for initial values
@@ -47,7 +49,9 @@ class NeuralNet(object):
 
         def fun(x):
             cost, grad = NeuralNet.cost(NeuralNet.roll(x, shapes),
-                                        input, expected_output)
+                                        self.lambda_,
+                                        input,
+                                        expected_output)
             return cost, NeuralNet.unroll(grad)[0]
         result = minimize(fun, array, jac=True)
         self.weights = NeuralNet.roll(result.x, shapes)
@@ -59,16 +63,18 @@ class NeuralNet(object):
         """
         array, shapes = NeuralNet.unroll(self.weights)
         fun = lambda x: NeuralNet.cost(NeuralNet.roll(x, shapes),
+                                       self.lambda_,
                                        input,
                                        expected_output)[0]
         grad = lambda x: NeuralNet.unroll(
             NeuralNet.cost(NeuralNet.roll(x, shapes),
+                           self.lambda_,
                            input,
                            expected_output)[1])[0]
         return check_grad(fun, grad, array)
 
     @staticmethod
-    def cost(weights, input, expected_output):
+    def cost(weights, lambda_, input, expected_output):
         """
         Find the cost of the given weights,
         based on input and the expected_output.
@@ -97,7 +103,9 @@ class NeuralNet(object):
         error = (-expected_output * np.log(result) -
                  (1 - expected_output) *
                  np.log(1 - result + sys.float_info.min))
-        cost = error.sum() / num_samples
+        cost = (error.sum() / num_samples + 
+            lambda_ / (2 * num_samples) *
+            np.sum(np.square(NeuralNet.unroll(weights)[0])))
         delta = result - expected_output
         deltas = [delta]
         for i in reversed(range(0, len(weights) - 1)):
@@ -108,9 +116,10 @@ class NeuralNet(object):
         gradients = []
         for i in range(0, len(deltas)):
             bias = np.ones((len(inputs[i]), 1))
-            gradients.append(
-                np.hstack((bias, inputs[i])).transpose().dot(deltas[i]) /
+            grad = (np.hstack((bias, inputs[i])).transpose().dot(deltas[i]) /
                 num_samples)
+            grad += lambda_ / num_samples * weights[i]
+            gradients.append(grad)
         return cost, gradients
 
     @staticmethod

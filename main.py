@@ -7,7 +7,7 @@ from card import deal
 
 print("Starting Training")
 ai = Bot(deal(5))
-for i in range(100):
+for i in range(52):
     card1, card2 = deal(2)
     same_rank = card1[0] == card2[0]
     same_suit = card1[1] == card2[1]
