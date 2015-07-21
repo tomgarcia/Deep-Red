@@ -20,7 +20,13 @@ while True:
     prev_card = (data[0], data[1])
     print(ai.hand)
     card = ai.play(prev_card)
-    print(card)
-    ai.add_card(*deal(1))
-    correct_output = int(input("Valid?(1/0): "))
-    ai.add_sample(card, prev_card, (correct_output,))
+    if card:
+        print(card)
+        correct_output = int(input("Valid?(1/0): "))
+        ai.add_sample(card, prev_card, (correct_output,))
+        if not correct_output:
+            ai.add_card(card)
+            ai.add_card(*deal(1))
+    else:
+        print("Pass")
+        ai.add_card(*deal(1))

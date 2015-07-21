@@ -44,4 +44,8 @@ class Bot(object):
         """
         input = [format_input(card, prev_card) for card in self.hand]
         output = self.net(input)
-        return self.hand.pop(np.argmax(output))
+        index = np.argmax(output)
+        print(output[index])
+        if output[index] < .5:
+            return False
+        return self.hand.pop(index)
