@@ -6,27 +6,35 @@ from bot import Bot
 from card import deal
 
 print("Starting Training")
-ai = Bot(deal(5))
+ai = Bot(deal(5), 1)
 for i in range(52):
-    card1, card2 = deal(2)
-    same_rank = card1[0] == card2[0]
-    same_suit = card1[1] == card2[1]
-    output = int(same_rank or same_suit)
-    ai.add_sample(card1, card2, (output,))
+    card, prev_card = deal(2)
+    same_rank = card[0] == prev_card[0]
+    same_suit = card[1] == prev_card[1]
+    output = same_rank or same_suit
+    if prev_card[0] == 5 and not card[0] >= 5:
+        output = False
+    elif prev_card[0] == 7 and not card[0] == 7:
+        output = False
+    if card[0] == prev_card[0]:
+        tap = 1
+    else:
+        tap = 0
+    ai.add_sample(card, prev_card, output, [tap])
 print("Training Complete")
-net = ai.net
 while True:
-    data = [int(s) for s in input("Enter top of pile: ").split()]
-    prev_card = (data[0], data[1])
+    prev_card = [int(s) for s in input("Enter top of pile: ").split()]
     print(ai.hand)
-    card = ai.play(prev_card)
-    if card:
-        print(card)
-        correct_output = int(input("Valid?(1/0): "))
-        ai.add_sample(card, prev_card, (correct_output,))
-        if not correct_output:
-            ai.add_card(card)
-            ai.add_card(*deal(1))
+    play = ai.play(prev_card)
+    if play:
+        print(play)
+        card, actions = play
+        if input("valid?") == "n":
+            ai.add_sample(card, prev_card, False)
+        else:
+            if input("correct actions?") == "n":
+                actions = [int(s) for s in input("Correct actions: ").split()]
+            ai.add_sample(card, prev_card, True, actions)
     else:
         print("Pass")
         ai.add_card(*deal(1))

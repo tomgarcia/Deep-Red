@@ -44,6 +44,8 @@ class NeuralNet(object):
     def train(self, input, expected_output):
         """
         Train the neural net using the given input and output.
+        Input and expected_output must be lists,
+        even if they only contain a single item.
         """
         array, shapes = NeuralNet.unroll(self.weights)
 
@@ -60,6 +62,8 @@ class NeuralNet(object):
         """
         Check whether cost properly calculates gradients.
         Result should be close to zero.
+        Input and expected_output must be lists,
+        even if they only contain a single item.
         """
         array, shapes = NeuralNet.unroll(self.weights)
         fun = lambda x: NeuralNet.cost(NeuralNet.roll(x, shapes),
@@ -78,15 +82,14 @@ class NeuralNet(object):
         """
         Find the cost of the given weights,
         based on input and the expected_output.
+        Input and expected_output must be lists,
+        even if they only contain a single item.
         """
         input = np.asarray(input)
         expected_output = np.asarray(expected_output)
         # Single row "matrixes" are one-dimensional, not two,
         # so len() does not work as expected
-        if len(input.shape) == 1:
-            num_samples = 1
-        else:
-            num_samples = len(input)
+        num_samples = len(input)
         inputs = []
         results = []
         for weight in weights:

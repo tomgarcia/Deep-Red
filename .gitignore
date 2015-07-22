@@ -1,2 +1,6 @@
-#Cached files
+# Cached files
 __pycache__/
+
+# Vim swap files
+*.swp
+*.swo

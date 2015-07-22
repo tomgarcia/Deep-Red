@@ -13,38 +13,54 @@ class Bot(object):
     such as "hand" and the list of previous plays.
     """
 
-    def __init__(self, hand):
+    def __init__(self, hand, num_actions):
         """
-        Creates a bot with an initial hand.
-        hands are not currently used for anything.
+        Creates a bot with an initial hand, and a set number of
+        actions to potentially perform.
         """
         self.hand = hand
         input_size = len(format_input((0, 0), (0, 0)))
-        self.net = NeuralNet(input_size, 2, 1)
-        self.samples = ([], [])
+        self.valid_net = NeuralNet(input_size, 2, 1)
+        self.valid_samples = ([], [])
+        self.hasActions = False
+        if num_actions > 0:
+            self.hasActions = True
+            self.action_net = NeuralNet(input_size, 2, num_actions)
+            self.action_samples = ([], [])
 
-    def add_sample(self, card, prev_card, outcome):
-        """Adds a new sample for the bot to train on."""
+    def add_sample(self, card, prev_card, isValid, actions=[]):
+        """
+        Adds a new sample for the bot to train on. actions is
+        not needed if the move is invalid, and must always be a list,
+        even if there is only one action.
+        """
         input = format_input(card, prev_card)
-        self.samples[0].append(input)
-        self.samples[1].append(outcome)
-        self.net.train(self.samples[0], self.samples[1])
+        self.valid_samples[0].append(input)
+        self.valid_samples[1].append([int(isValid)])
+        self.valid_net.train(*self.valid_samples)
+        if isValid and self.hasActions:
+            self.action_samples[0].append(input)
+            self.action_samples[1].append(actions)
+            self.action_net.train(*self.action_samples)
 
     def add_card(self, card):
         """
-        Adds a card to the bot's hand.
+        Adds a card to the bot's hand. The card should be a pair of ints.
         """
         self.hand.append(card)
 
     def play(self, prev_card):
         """
-        Bot plays the best card from its hand, based on the card
-        on top of the pile.
+        Bot plays the best card from its hand, or passes by returning
+        False. If bot plays a card, it also returns a list of actions.
         """
         input = [format_input(card, prev_card) for card in self.hand]
-        output = self.net(input)
-        index = np.argmax(output)
-        print(output[index])
+        output = self.valid_net(input)
+        index = np.argmax(output, axis=0)
         if output[index] < .5:
             return False
-        return self.hand.pop(index)
+        if self.hasActions:
+            actions = np.rint(self.action_net([input[index]]))[0]
+        else:
+            actions = []
+        return self.hand.pop(index), actions
