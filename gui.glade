@@ -28,7 +28,7 @@
                     <property name="can_focus">False</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <object class="GtkEntry" id="entry2">
+                      <object class="GtkEntry" id="sample_prevcard_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                       </object>
@@ -61,7 +61,7 @@
                     <property name="can_focus">False</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <object class="GtkEntry" id="entry1">
+                      <object class="GtkEntry" id="sample_card_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                       </object>
@@ -131,6 +131,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="add_sample" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -162,7 +163,7 @@
                     <property name="can_focus">False</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <object class="GtkEntry" id="entry3">
+                      <object class="GtkEntry" id="prevcard_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                       </object>

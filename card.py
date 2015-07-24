@@ -30,3 +30,26 @@ def deal(num_cards):
     and therefore not guaranteed to be unique.
     """
     return [(randrange(13), randrange(4)) for i in range(num_cards)]
+
+def tuple_from_s(s):
+    rank = s[:len(s)-1]
+    suit = s[len(s)-1]
+    if suit.lower() == 'c':
+        suit = 0
+    elif suit.lower() == 'd':
+        suit = 1
+    elif suit.lower() == 'h':
+        suit = 2
+    elif suit.lower() == 's':
+        suit = 3
+    if rank.isdigit():
+        rank = int(rank) - 2
+    elif rank.lower() == 'j':
+        rank = 9
+    elif rank.lower() == 'q':
+        rank = 10
+    elif rank.lower() == 'k':
+        rank = 11
+    elif rank.lower() == 'a':
+        rank = 12
+    return (rank, suit)
