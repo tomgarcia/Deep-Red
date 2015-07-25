@@ -19,7 +19,7 @@ class NeuralNet(object):
         """
         if len(layers) < 2:
             raise Exception("Neural Net requires at least 2 layers")
-        self.lambda_ = 0.1
+        self.lambda_ = lambda_
         self.weights = []
         for i in range(len(layers) - 1):
             # TODO Find correct range for initial values
@@ -66,15 +66,28 @@ class NeuralNet(object):
         even if they only contain a single item.
         """
         array, shapes = NeuralNet.unroll(self.weights)
-        fun = lambda x: NeuralNet.cost(NeuralNet.roll(x, shapes),
-                                       self.lambda_,
-                                       input,
-                                       expected_output)[0]
-        grad = lambda x: NeuralNet.unroll(
-            NeuralNet.cost(NeuralNet.roll(x, shapes),
-                           self.lambda_,
-                           input,
-                           expected_output)[1])[0]
+
+        def fun(x):
+            """
+            Wrapper around cost which allows it to interact
+            with scipy.optimize.minimize.
+            """
+            return NeuralNet.cost(NeuralNet.roll(x, shapes),
+                                  self.lambda_,
+                                  input,
+                                  expected_output)[0]
+
+        def grad(x):
+            """
+            Wrapper around cost which serves as the derivative
+            function for scipy.optimize.minimize.
+            """
+            return NeuralNet.unroll(
+                NeuralNet.cost(NeuralNet.roll(x, shapes),
+                               self.lambda_,
+                               input,
+                               expected_output)[1])[0]
+
         return check_grad(fun, grad, array)
 
     @staticmethod
@@ -106,9 +119,9 @@ class NeuralNet(object):
         error = (-expected_output * np.log(result) -
                  (1 - expected_output) *
                  np.log(1 - result + sys.float_info.min))
-        cost = (error.sum() / num_samples + 
-            lambda_ / (2 * num_samples) *
-            np.sum(np.square(NeuralNet.unroll(weights)[0])))
+        cost = (error.sum() / num_samples +
+                lambda_ / (2 * num_samples) *
+                np.sum(np.square(NeuralNet.unroll(weights)[0])))
         delta = result - expected_output
         deltas = [delta]
         for i in reversed(range(0, len(weights) - 1)):
@@ -120,7 +133,7 @@ class NeuralNet(object):
         for i in range(0, len(deltas)):
             bias = np.ones((len(inputs[i]), 1))
             grad = (np.hstack((bias, inputs[i])).transpose().dot(deltas[i]) /
-                num_samples)
+                    num_samples)
             grad += lambda_ / num_samples * weights[i]
             gradients.append(grad)
         return cost, gradients

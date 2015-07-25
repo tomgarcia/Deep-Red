@@ -17,6 +17,9 @@ def format_card(card):
 
 
 def format_input(card, prev_card):
+    """
+    Format two cards in a manner that the neural net can understand them.
+    """
     card = format_card(card)
     prev_card = format_card(prev_card)
     matching = [int(card[0] == prev_card[0]),
@@ -31,7 +34,12 @@ def deal(num_cards):
     """
     return [(randrange(13), randrange(4)) for i in range(num_cards)]
 
+
 def tuple_from_s(s):
+    """
+    Create a tuple representing a card, based on its string
+    representation.
+    """
     rank = s[:len(s)-1]
     suit = s[len(s)-1]
     if suit.lower() == 'c':

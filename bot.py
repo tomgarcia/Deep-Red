@@ -22,13 +22,13 @@ class Bot(object):
         input_size = len(format_input((0, 0), (0, 0)))
         self.valid_net = NeuralNet(input_size, 2, 1)
         self.valid_samples = ([], [])
-        self.hasActions = False
+        self.has_actions = False
         if num_actions > 0:
-            self.hasActions = True
+            self.has_actions = True
             self.action_net = NeuralNet(input_size, 2, num_actions)
             self.action_samples = ([], [])
 
-    def add_sample(self, card, prev_card, isValid, actions=[]):
+    def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
         Adds a new sample for the bot to train on. actions is
         not needed if the move is invalid, and must always be a list,
@@ -36,9 +36,9 @@ class Bot(object):
         """
         input = format_input(card, prev_card)
         self.valid_samples[0].append(input)
-        self.valid_samples[1].append([int(isValid)])
+        self.valid_samples[1].append([int(is_valid)])
         self.valid_net.train(*self.valid_samples)
-        if isValid and self.hasActions:
+        if is_valid and self.has_actions:
             self.action_samples[0].append(input)
             self.action_samples[1].append(actions)
             self.action_net.train(*self.action_samples)
@@ -59,7 +59,7 @@ class Bot(object):
         index = np.argmax(output, axis=0)
         if output[index] < .5:
             return False
-        if self.hasActions:
+        if self.has_actions:
             actions = np.rint(self.action_net([input[index]]))[0]
         else:
             actions = []
