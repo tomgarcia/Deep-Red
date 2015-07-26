@@ -15,39 +15,38 @@ class Gui(Thread):
         """Setup GUI"""
         Thread.__init__(self)
         self.bot = Bot(deal(5), 2)
-        builder = Gtk.Builder.new_from_file("gui.glade")
-        builder.connect_signals(self)
-        self.window = builder.get_object("window")
-        self.prevcard = builder.get_object("sample_prevcard_entry")
-        self.card = builder.get_object("sample_card_entry")
-        self.valid_button = builder.get_object("valid_checkbox")
-        self.actions = builder.get_object("actionbox")
-        self.actions.set_sensitive(False)
+        self.builder = Gtk.Builder.new_from_file("gui.glade")
+        self.builder.connect_signals(self)
+        self.builder.get_object("actionbox").set_sensitive(False)
 
     def run(self):
         """Start window and Gtk main loop"""
-        self.window.show_all()
+        self.builder.get_object("window").show_all()
         Gtk.main()
 
     def quit(self, widget, event):
         """Close GUI"""
         Gtk.main_quit()
 
-    def add_sample(self, widget):
+    def add_sample(self, actionbox):
         """
         Add a sample to the bot, based on the sample input fields.
         """
-        prevcard = tuple_from_s(self.prevcard.get_text())
-        card = tuple_from_s(self.card.get_text())
-        self.prevcard.set_text("")
-        self.card.set_text("")
+        prevcard_entry = self.builder.get_object("sample_prevcard_entry")
+        card_entry = self.builder.get_object("sample_card_entry")
+        valid_button = self.builder.get_object("valid_checkbox")
+        prevcard = tuple_from_s(prevcard_entry.get_text())
+        card = tuple_from_s(card_entry.get_text())
+        prevcard_entry.set_text("")
+        card_entry.set_text("")
+        valid_button.set_active(False)
         actions = []
-        for button in self.actions.get_children():
+        for button in actionbox.get_children():
             actions.append(int(button.get_active()))
             button.set_active(False)
         self.bot.add_sample(card,
                             prevcard,
-                            self.valid_button.get_active(),
+                            valid_button.get_active(),
                             actions)
 
     def toggle_valid(self, button):
@@ -55,7 +54,12 @@ class Gui(Thread):
         Activate or deactivate the action checkboxes, depending on whether
         valid checkbox is clicked.
         """
-        self.actions.set_sensitive(button.get_active())
+        actions = self.builder.get_object("actionbox")
+        actions.set_sensitive(button.get_active())
+
+    def play(self, widget):
+        pass
+
 
 if __name__ == "__main__":
     gui = Gui()
