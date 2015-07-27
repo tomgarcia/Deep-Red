@@ -57,9 +57,24 @@ class Gui(Thread):
         actions = self.builder.get_object("actionbox")
         actions.set_sensitive(button.get_active())
 
-    def play(self, widget):
-        pass
+    def add_card(self, entry):
+        """Event handler for added card."""
+        new_card = tuple_from_s(entry.get_text())
+        entry.set_text("")
+        self.bot.add_card(new_card)
 
+    def play(self, entry):
+        """Event handler for add card button."""
+        prev_card = tuple_from_s(entry.get_text())
+        entry.set_text("")
+        play = self.bot.play(prev_card)
+        if play:
+            dialog = self.builder.get_object("play_dialog")
+            card, actions = play
+            label = self.builder.get_object("instructions")
+            label.set_text("Deep Red played " + str(card) +
+                    ". Is this valid?")
+            dialog.show_all()
 
 if __name__ == "__main__":
     gui = Gui()
