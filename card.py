@@ -50,6 +50,7 @@ def tuple_from_s(s):
         suit = 2
     elif suit.lower() == 's':
         suit = 3
+
     if rank.isdigit():
         rank = int(rank) - 2
     elif rank.lower() == 'j':
@@ -61,3 +62,26 @@ def tuple_from_s(s):
     elif rank.lower() == 'a':
         rank = 12
     return (rank, suit)
+
+def s_from_tuple(t):
+    rank, suit = t
+    if rank == 12:
+        s = "Ace"
+    elif rank == 11:
+        s = "King"
+    elif rank == 10:
+        s = "Queen"
+    elif rank == 9:
+        s = "Jack"
+    else:
+        s = str(rank + 2)
+
+    if suit == 0:
+        s += " of Clubs"
+    elif suit == 1:
+        s += " of Diamonds"
+    elif suit == 2:
+        s += " of Hearts"
+    elif suit == 3:
+        s += " of Spades"
+    return s

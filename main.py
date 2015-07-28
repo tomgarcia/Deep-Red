@@ -4,7 +4,7 @@ from threading import Thread
 
 from gi.repository import Gtk
 
-from card import deal, tuple_from_s
+from card import deal, tuple_from_s, s_from_tuple
 from bot import Bot
 
 
@@ -68,13 +68,23 @@ class Gui(Thread):
         prev_card = tuple_from_s(entry.get_text())
         entry.set_text("")
         play = self.bot.play(prev_card)
+        print(play)
         if play:
             dialog = self.builder.get_object("play_dialog")
+            actionbox = self.builder.get_object("actionbox1").get_children()
             card, actions = play
+            for i in range(len(actions)):
+                actionbox[i].set_active(actions[i])
             label = self.builder.get_object("instructions")
-            label.set_text("Deep Red played " + str(card) +
-                    ". Is this valid?")
-            dialog.show_all()
+            label.set_text("Deep Red played " + s_from_tuple(card) +
+                    """. Is this valid? If the card is valid but the
+                    actions are not, simply change the actions and then
+                    click valid.""")
+        else:
+            dialog = self.builder.get_object("pass_dialog")
+        dialog.show_all()
+    def close(self, dialog):
+        dialog.hide()
 
 if __name__ == "__main__":
     gui = Gui()
