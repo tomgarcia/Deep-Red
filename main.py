@@ -18,6 +18,8 @@ class Gui(Thread):
         self.builder = Gtk.Builder.new_from_file("gui.glade")
         self.builder.connect_signals(self)
         self.builder.get_object("actionbox").set_sensitive(False)
+        self.card = None
+        self.prev_card = None
 
     def run(self):
         """Start window and Gtk main loop"""
@@ -68,11 +70,12 @@ class Gui(Thread):
         prev_card = tuple_from_s(entry.get_text())
         entry.set_text("")
         play = self.bot.play(prev_card)
-        print(play)
         if play:
             dialog = self.builder.get_object("play_dialog")
             actionbox = self.builder.get_object("actionbox1").get_children()
             card, actions = play
+            self.card = card
+            self.prev_card = prev_card
             for i in range(len(actions)):
                 actionbox[i].set_active(actions[i])
             label = self.builder.get_object("instructions")
@@ -83,6 +86,19 @@ class Gui(Thread):
         else:
             dialog = self.builder.get_object("pass_dialog")
         dialog.show_all()
+
+    def valid(self, actionbox):
+        actions = [int(b.get_active()) for b in actionbox.get_children()]
+        self.bot.add_sample(self.card, self.prev_card, True, actions)
+        dialog = self.builder.get_object("play_dialog")
+        dialog.hide()
+
+    def invalid(self, button):
+        self.bot.add_sample(self.card, self.prev_card, False)
+        self.bot.add_card(self.card)
+        dialog = self.builder.get_object("play_dialog")
+        dialog.hide()
+
     def close(self, dialog):
         dialog.hide()
 
