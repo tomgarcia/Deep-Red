@@ -50,6 +50,10 @@ class NeuralNet(object):
         array, shapes = NeuralNet.unroll(self.weights)
 
         def fun(x):
+            """
+            Wrapper around cost which allows it to interact
+            with scipy.optimize.minimize.
+            """
             cost, grad = NeuralNet.cost(NeuralNet.roll(x, shapes),
                                         self.lambda_,
                                         input,
@@ -70,7 +74,7 @@ class NeuralNet(object):
         def fun(x):
             """
             Wrapper around cost which allows it to interact
-            with scipy.optimize.minimize.
+            with scipy.optimize.check_grad.
             """
             return NeuralNet.cost(NeuralNet.roll(x, shapes),
                                   self.lambda_,
@@ -80,7 +84,7 @@ class NeuralNet(object):
         def grad(x):
             """
             Wrapper around cost which serves as the derivative
-            function for scipy.optimize.minimize.
+            function for scipy.optimize.check_grad.
             """
             return NeuralNet.unroll(
                 NeuralNet.cost(NeuralNet.roll(x, shapes),

@@ -63,6 +63,7 @@ def tuple_from_s(s):
         rank = 12
     return (rank, suit)
 
+
 def s_from_tuple(t):
     rank, suit = t
     if rank == 12:
