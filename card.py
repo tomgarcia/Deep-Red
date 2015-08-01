@@ -40,6 +40,8 @@ def tuple_from_s(s):
     Create a tuple representing a card, based on its string
     representation.
     """
+    if s == "":
+        return False
     rank = s[:len(s)-1]
     suit = s[len(s)-1]
     if suit.lower() == 'c':
@@ -50,8 +52,10 @@ def tuple_from_s(s):
         suit = 2
     elif suit.lower() == 's':
         suit = 3
+    else:
+        return False
 
-    if rank.isdigit():
+    if rank.isdigit() and int(rank) > 1 and int(rank) < 11:
         rank = int(rank) - 2
     elif rank.lower() == 'j':
         rank = 9
@@ -61,6 +65,8 @@ def tuple_from_s(s):
         rank = 11
     elif rank.lower() == 'a':
         rank = 12
+    else:
+        return False
     return (rank, suit)
 
 

@@ -14,20 +14,26 @@ def init(builder):
     init_sample_pane(builder)
     init_play_pane(builder)
     new_card_entry = builder.get_object("new_card_entry")
+    invalid_dialog = builder.get_object("invalid_dialog")
 
-    def add_card(entry):
+    def add_card(button):
         """Event handler for added card."""
         new_card = tuple_from_s(new_card_entry.get_text())
         new_card_entry.set_text("")
-        bot.add_card(new_card)
+        if new_card:
+            bot.add_card(new_card)
+        else:
+            invalid_dialog.show()
 
     builder.get_object("add_card").connect("clicked", add_card)
+    builder.get_object("button2").connect("clicked", close)
 
 def init_play_pane(builder):
     actionbox = builder.get_object("actionbox1")
     prev_card_entry = builder.get_object("prevcard_entry")
     play_dialog = builder.get_object("play_dialog")
     pass_dialog = builder.get_object("pass_dialog")
+    invalid_dialog = builder.get_object("invalid_dialog")
     label = builder.get_object("instructions")
     card = None
     prev_card = None
@@ -37,6 +43,9 @@ def init_play_pane(builder):
         nonlocal card, prev_card
         prev_card = tuple_from_s(prev_card_entry.get_text())
         prev_card_entry.set_text("")
+        if not prev_card:
+            invalid_dialog.show()
+            return
         play = bot.play(prev_card)
         if play:
             dialog = play_dialog
@@ -44,10 +53,14 @@ def init_play_pane(builder):
             card, actions = play
             for i in range(len(actions)):
                 action_list[i].set_active(actions[i])
-            label.set_text("Deep Red played " + s_from_tuple(card) +
-                           """. Is this valid? If the card is valid but the
-                           actions are not, simply change the actions and then
-                           click valid.""")
+            label_text = ("Deep Red played " + s_from_tuple(card) +
+                          ". Is this valid?")
+            if(len(action_list) > 0):
+                label_text += """
+                              If the card is valid but the actions are not,
+                              simply change the actions and then click valid.
+                              """
+            label.set_text(label_text)
         else:
             dialog = pass_dialog
         dialog.show_all()
@@ -66,10 +79,6 @@ def init_play_pane(builder):
         dialog = button.get_toplevel()
         dialog.hide()
 
-    def close(button):
-        """Default handler for dialog buttons."""
-        button.get_toplevel().hide()
-
     builder.get_object("play_card").connect("clicked", play_card)
     builder.get_object("button1").connect("clicked", close)
     builder.get_object("valid_button").connect("clicked", valid)
@@ -86,6 +95,7 @@ def init_setup_window(builder):
     def begin(button):
         global bot
         actions = [s.strip() for s in action_list.get_text().split(",")]
+        actions = list(filter(lambda x: len(x) > 0, actions))
         for action in actions:
             sample_actionbox.add(Gtk.CheckButton(action))
             play_actionbox.add(Gtk.CheckButton(action))
@@ -102,6 +112,7 @@ def init_sample_pane(builder):
     prev_card_entry = builder.get_object("sample_prevcard_entry")
     card_entry = builder.get_object("sample_card_entry")
     valid_button = builder.get_object("valid_checkbox")
+    invalid_dialog = builder.get_object("invalid_dialog")
     actionbox.set_sensitive(False)
 
     def toggle_valid(button):
@@ -119,6 +130,9 @@ def init_sample_pane(builder):
         card = tuple_from_s(card_entry.get_text())
         prev_card_entry.set_text("")
         card_entry.set_text("")
+        if not prev_card or not card:
+            invalid_dialog.show()
+            return
         actions = []
         for button in actionbox.get_children():
             actions.append(int(button.get_active()))
@@ -135,6 +149,10 @@ def init_sample_pane(builder):
 def quit(widget, event):
     """Close GUI"""
     Gtk.main_quit()
+
+def close(button):
+    """Default handler for dialog buttons."""
+    button.get_toplevel().hide()
 
 if __name__ == "__main__":
     bot = None
