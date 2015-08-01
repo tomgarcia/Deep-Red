@@ -20,6 +20,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="close" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -97,7 +98,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <signal name="clicked" handler="begin" object="action_list" swapped="no"/>
+            <signal name="clicked" handler="begin" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -161,7 +162,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="add_card" object="new_card_entry" swapped="no"/>
+                <signal name="clicked" handler="add_card" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -301,7 +302,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="add_sample" object="actionbox" swapped="no"/>
+                <signal name="clicked" handler="add_sample" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -360,7 +361,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="play" object="instructions" swapped="no"/>
+                <signal name="clicked" handler="play_card" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -398,7 +399,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="close" object="pass_dialog" swapped="no"/>
+                <signal name="clicked" handler="close" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -458,7 +459,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="valid" object="actionbox1" swapped="no"/>
+                <signal name="clicked" handler="valid" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
