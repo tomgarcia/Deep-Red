@@ -16,20 +16,64 @@ class Gui(Thread):
         Thread.__init__(self)
         self.bot = None
         builder = Gtk.Builder.new_from_file("gui.glade")
-        builder.connect_signals(self)
-        builder.get_object("actionbox").set_sensitive(False)
         self.setup_window = builder.get_object("setup_window")
         self.window = builder.get_object("window")
-        self.play = {"actionbox": builder.get_object("actionbox1"),
-                     "prev_card": builder.get_object("prevcard_entry")}
-        self.sample = {"actionbox": builder.get_object("actionbox"),
-                       "prev_card": builder.get_object("sample_prevcard_entry"),
-                       "card": builder.get_object("sample_card_entry"),
-                       "valid": builder.get_object("valid_checkbox")}
         self.play_dialog = builder.get_object("play_dialog")
         self.pass_dialog = builder.get_object("pass_dialog")
         self.card = None
         self.prev_card = None
+        self.init_setup_window(builder)
+        self.init_sample_pane(builder)
+        self.init_play_pane(builder)
+        builder.get_object("add_card").connect_object(
+            "clicked", self.add_card, builder.get_object("new_card_entry"))
+        self.window.connect("delete-event", self.quit)
+
+    def init_play_pane(self, builder):
+        actionbox = builder.get_object("actionbox1")
+        prev_card = builder.get_object("prevcard_entry")
+        builder.get_object("play_card").connect_object(
+            "clicked",
+            self.play_card,
+            prev_card,
+            actionbox,
+            builder.get_object("instructions"))
+        builder.get_object("button1").connect(
+            "clicked",
+            self.close)
+        builder.get_object("valid_button").connect_object(
+            "clicked",
+            self.valid,
+            actionbox)
+        builder.get_object("invalid_button").connect("clicked", self.invalid)
+
+    def init_setup_window(self, builder):
+        builder.get_object("setup_window").connect("delete-event", self.quit)
+        builder.get_object("begin").connect_object(
+            "clicked",
+            self.begin,
+            builder.get_object("action_list"),
+            builder.get_object("actionbox"),
+            builder.get_object("actionbox1"))
+
+    def init_sample_pane(self, builder):
+        actionbox = builder.get_object("actionbox")
+        prev_card = builder.get_object("sample_prevcard_entry")
+        card = builder.get_object("sample_card_entry")
+        valid_button = builder.get_object("valid_checkbox")
+        actionbox.set_sensitive(False)
+        valid_button.connect(
+            "toggled",
+            self.toggle_valid,
+            actionbox)
+        builder.get_object("add_sample").connect_object(
+            "clicked",
+            self.add_sample,
+            prev_card,
+            card,
+            valid_button,
+            actionbox)
+
 
     def run(self):
         """Start window and Gtk main loop"""
@@ -40,33 +84,29 @@ class Gui(Thread):
         """Close GUI"""
         Gtk.main_quit()
 
-    def add_sample(self, actionbox):
+    def add_sample(self, prev_card_entry, card_entry, valid_button, actionbox):
         """
         Add a sample to the bot, based on the sample input fields.
         """
-        prevcard_entry = self.sample["prev_card"]
-        card_entry = self.sample["card"]
-        valid_button = self.sample["valid"]
-        prevcard = tuple_from_s(prevcard_entry.get_text())
+        prev_card = tuple_from_s(prev_card_entry.get_text())
         card = tuple_from_s(card_entry.get_text())
-        prevcard_entry.set_text("")
+        prev_card_entry.set_text("")
         card_entry.set_text("")
         actions = []
         for button in actionbox.get_children():
             actions.append(int(button.get_active()))
             button.set_active(False)
         self.bot.add_sample(card,
-                            prevcard,
+                            prev_card,
                             valid_button.get_active(),
                             actions)
         valid_button.set_active(False)
 
-    def toggle_valid(self, button):
+    def toggle_valid(self, button, actions):
         """
         Activate or deactivate the action checkboxes, depending on whether
         valid checkbox is clicked.
         """
-        actions = self.sample["actionbox"]
         actions.set_sensitive(button.get_active())
 
     def add_card(self, entry):
@@ -75,14 +115,14 @@ class Gui(Thread):
         entry.set_text("")
         self.bot.add_card(new_card)
 
-    def play(self, label):
+    def play_card(self, prev_card_entry, actionbox, label):
         """Event handler for play card button."""
-        prev_card = tuple_from_s(self.play["prev_card"].get_text())
-        self.play["prev_card"].set_text("")
+        prev_card = tuple_from_s(prev_card_entry.get_text())
+        prev_card_entry.set_text("")
         play = self.bot.play(prev_card)
         if play:
             dialog = self.play_dialog
-            actionbox = self.play["actionbox"].get_children()
+            actionbox = actionbox.get_children()
             card, actions = play
             self.card = card
             self.prev_card = prev_card
@@ -110,15 +150,15 @@ class Gui(Thread):
         dialog = button.get_toplevel()
         dialog.hide()
 
-    def close(self, dialog):
+    def close(self, button):
         """Default handler for dialog buttons."""
-        dialog.hide()
+        button.get_toplevel().hide()
 
-    def begin(self, action_list):
+    def begin(self, action_list, sample_actionbox, play_actionbox):
         actions = [s.strip() for s in action_list.get_text().split(",")]
         for action in actions:
-            self.sample["actionbox"].add(Gtk.CheckButton(action))
-            self.play["actionbox"].add(Gtk.CheckButton(action))
+            sample_actionbox.add(Gtk.CheckButton(action))
+            play_actionbox.add(Gtk.CheckButton(action))
         self.bot = Bot(deal(5), len(actions))
         self.setup_window.hide()
         self.window.show_all()
