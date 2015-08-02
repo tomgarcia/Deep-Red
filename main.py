@@ -22,6 +22,7 @@ class App(Gtk.Application):
         builder.connect_signals(Handler(builder))
         setup_window = builder.get_object("setup_window")
         app.add_window(setup_window)
+        app.add_window(builder.get_object("window"))
         setup_window.show_all()
         actionbox = builder.get_object("actionbox")
         actionbox.set_sensitive(False)
@@ -50,7 +51,7 @@ class Handler(object):
             sample_actionbox.add(Gtk.CheckButton(action))
             play_actionbox.add(Gtk.CheckButton(action))
         self.bot = Bot(deal(5), len(actions))
-        setup_window.hide()
+        setup_window.destroy()
         window.show_all()
 
     def add_card(self, button):

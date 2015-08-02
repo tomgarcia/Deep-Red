@@ -1,6 +1,8 @@
 """
 Programmer-friendly interface to the neural network.
 """
+import json
+
 import numpy as np
 
 from neuralnet import NeuralNet
@@ -25,8 +27,8 @@ class Bot(object):
         self.has_actions = False
         if num_actions > 0:
             self.has_actions = True
-            self.action_net = NeuralNet(input_size, 2, num_actions)
             self.action_samples = ([], [])
+            self.action_net = NeuralNet(input_size, 2, num_actions)
 
     def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
@@ -64,3 +66,28 @@ class Bot(object):
         else:
             actions = []
         return self.hand.pop(index), actions
+
+    def save(self, f):
+        """Save the bot's data to the given file, so it can be reloaded later."""
+        if self.has_actions:
+            f.write(json.dumps((self.hand, self.valid_samples, self.action_samples)))
+        else:
+            f.write(json.dumps((self.hand, self.valid_samples, False)))
+
+    @classmethod
+    def load(cls, f):
+        """Create a new Bot from the file given."""
+        bot = object.__new__(cls)
+        bot.hand, bot.valid_samples, action_samples = json.loads(f.read())
+        input_size = len(format_input((0, 0), (0, 0)))
+        bot.valid_net = NeuralNet(input_size, 2, 1)
+        bot.valid_net.train(*bot.valid_samples)
+        if action_samples:
+            bot.action_samples = action_samples
+            num_actions = len(bot.action_samples[1][0])
+            bot.has_actions = True
+            bot.action_net = NeuralNet(input_size, 2, num_actions)
+            bot.action_net.train(*bot.action_samples)
+        else:
+            bot.has_actions = False
+        return bot
