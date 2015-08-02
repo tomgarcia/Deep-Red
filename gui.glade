@@ -63,6 +63,7 @@
   </object>
   <object class="GtkWindow" id="setup_window">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="quit" swapped="no"/>
     <child>
       <object class="GtkBox" id="box3">
@@ -85,9 +86,10 @@
           <object class="GtkEntry" id="action_list">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <signal name="activate" handler="begin" swapped="no"/>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
@@ -103,6 +105,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="pack_type">end</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -113,6 +116,7 @@
     <property name="can_focus">False</property>
     <property name="border_width">6</property>
     <property name="title" translatable="yes">Deep Red</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="quit" swapped="no"/>
     <child>
       <object class="GtkBox" id="inputbox">
@@ -138,6 +142,7 @@
                       <object class="GtkEntry" id="new_card_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <signal name="activate" handler="add_card" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -273,6 +278,7 @@
                 <child>
                   <object class="GtkButtonBox" id="actionbox">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <property name="layout_style">start</property>
@@ -307,6 +313,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="pack_type">end</property>
                 <property name="position">3</property>
               </packing>
             </child>
@@ -337,6 +344,7 @@
                       <object class="GtkEntry" id="prevcard_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <signal name="activate" handler="play_card" swapped="no"/>
                       </object>
                     </child>
                   </object>

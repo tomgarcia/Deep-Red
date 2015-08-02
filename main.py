@@ -19,21 +19,20 @@ class App(Gtk.Application):
     def activate(self, app):
         """Initial Startup Actions"""
         builder = Gtk.Builder.new_from_file("gui.glade")
-        builder.connect_signals(Handler(builder))
+        builder.connect_signals(Handler(builder, app))
         setup_window = builder.get_object("setup_window")
         app.add_window(setup_window)
-        app.add_window(builder.get_object("window"))
         setup_window.show_all()
         actionbox = builder.get_object("actionbox")
-        actionbox.set_sensitive(False)
 
 
 class Handler(object):
     """Class for holding signal handlers. Do not directly call methods."""
 
-    def __init__(self, builder):
+    def __init__(self, builder, app):
         """Connect the signals"""
         self.builder = builder
+        self.app = app
         self.bot = None
         self.card = None
         self.prev_card = None
@@ -52,6 +51,7 @@ class Handler(object):
             play_actionbox.add(Gtk.CheckButton(action))
         self.bot = Bot(deal(5), len(actions))
         setup_window.destroy()
+        self.app.add_window(window)
         window.show_all()
 
     def add_card(self, button):
@@ -148,7 +148,7 @@ class Handler(object):
 
     def quit(self, widget, event):
         """Close GUI"""
-        Gtk.main_quit()
+        widget.get_toplevel().destroy()
 
     def close(self, button):
         """Default handler for dialog buttons."""
