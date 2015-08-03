@@ -49,7 +49,7 @@ class Handler(object):
         for action in actions:
             sample_actionbox.add(Gtk.CheckButton(action))
             play_actionbox.add(Gtk.CheckButton(action))
-        self.bot = Bot(deal(5), len(actions))
+        self.bot = Bot([], len(actions))
         setup_window.destroy()
         self.app.add_window(window)
         window.show_all()
