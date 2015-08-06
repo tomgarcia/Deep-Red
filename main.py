@@ -146,13 +146,16 @@ class Handler(object):
                             actions)
         valid_button.set_active(False)
 
-    def quit(self, widget, event):
+    def quit(self, widget, event=None):
         """Close GUI"""
         widget.get_toplevel().destroy()
 
-    def close(self, button):
+    def close(self, button, event=None):
         """Default handler for dialog buttons."""
         button.get_toplevel().hide()
+
+    def open_profile(self, button):
+        self.builder.get_object("open_dialog").show()
 
 
 if __name__ == "__main__":
