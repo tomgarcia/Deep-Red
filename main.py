@@ -4,7 +4,7 @@ import sys
 
 from gi.repository import Gtk
 
-from card import deal, tuple_from_s, s_from_tuple
+from card import tuple_from_s, s_from_tuple
 from bot import Bot
 
 
@@ -23,7 +23,6 @@ class App(Gtk.Application):
         setup_window = builder.get_object("setup_window")
         app.add_window(setup_window)
         setup_window.show_all()
-        actionbox = builder.get_object("actionbox")
 
 
 class Handler(object):
@@ -50,7 +49,7 @@ class Handler(object):
         for action in actions:
             sample_actionbox.add(Gtk.CheckButton(action))
             play_actionbox.add(Gtk.CheckButton(action))
-        self.bot = Bot([], len(actions))
+        self.bot = Bot([], actions)
         setup_window.destroy()
         self.app.add_window(window)
         window.show_all()
@@ -104,6 +103,7 @@ class Handler(object):
         dialog.show_all()
 
     def cancel_play(self, button, event=None):
+        """Cancel the play that just occured."""
         self.bot.add_card(self.card)
         button.get_toplevel().hide()
         return True
@@ -163,20 +163,32 @@ class Handler(object):
         return True
 
     def open_dialog(self, dialog):
+        """Generic event handler for opening a dialog window."""
         dialog.show()
 
     def open_profile(self, filechooser):
+        """Open the selected file to load a Bot from."""
         self.filename = filechooser.get_filename()
         self.bot = Bot.load(self.filename)
+        sample_actionbox = self.builder.get_object("actionbox")
+        play_actionbox = self.builder.get_object("actionbox1")
+        sample_actionbox.foreach(sample_actionbox.remove)
+        play_actionbox.foreach(play_actionbox.remove)
+        for action in self.bot.actions:
+            sample_actionbox.add(Gtk.CheckButton(action))
+            play_actionbox.add(Gtk.CheckButton(action))
+        sample_actionbox.show_all()
         filechooser.hide()
 
     def save(self, button):
+        """Event handler for Save button"""
         if self.filename:
             self.bot.save(self.filename)
         else:
             self.builder.get_object("save_dialog").show()
 
     def save_as(self, filechooser):
+        """Event handler for Save As button"""
         self.filename = filechooser.get_filename()
         self.bot.save(self.filename)
         filechooser.hide()

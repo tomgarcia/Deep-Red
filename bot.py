@@ -15,20 +15,19 @@ class Bot(object):
     such as "hand" and the list of previous plays.
     """
 
-    def __init__(self, hand, num_actions):
+    def __init__(self, hand, actions=[]):
         """
-        Creates a bot with an initial hand, and a set number of
-        actions to potentially perform.
+        Creates a bot with an initial hand, and a list of actions
+        that it can perform.
         """
         self.hand = hand
         input_size = len(format_input((0, 0), (0, 0)))
         self.valid_net = NeuralNet(input_size, 2, 1)
         self.valid_samples = ([], [])
-        self.has_actions = False
-        if num_actions > 0:
-            self.has_actions = True
+        self.actions = actions
+        if len(self.actions) > 0:
             self.action_samples = ([], [])
-            self.action_net = NeuralNet(input_size, 2, num_actions)
+            self.action_net = NeuralNet(input_size, 2, len(self.actions))
 
     def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
@@ -40,7 +39,7 @@ class Bot(object):
         self.valid_samples[0].append(input)
         self.valid_samples[1].append([int(is_valid)])
         self.valid_net.train(*self.valid_samples)
-        if is_valid and self.has_actions:
+        if is_valid and self.actions:
             self.action_samples[0].append(input)
             self.action_samples[1].append(actions)
             self.action_net.train(*self.action_samples)
@@ -63,36 +62,43 @@ class Bot(object):
         index = np.argmax(output, axis=0)
         if output[index] < .5:
             return False
-        if self.has_actions:
+        if self.actions:
             actions = np.rint(self.action_net([input[index]]))[0]
         else:
             actions = []
         return self.hand.pop(index), actions
 
     def save(self, filename):
-        """Save the bot's data to the given file, so it can be reloaded later."""
+        """
+        Save the bot's data to the given file, so it can be reloaded later.
+        """
         f = open(filename, "w")
-        if self.has_actions:
-            f.write(json.dumps((self.hand, self.valid_samples, self.action_samples)))
+        if self.actions:
+            obj = (self.hand,
+                   self.valid_samples,
+                   self.action_samples,
+                   self.actions)
         else:
-            f.write(json.dumps((self.hand, self.valid_samples, False)))
+            obj = (self.hand, self.valid_samples, False, False)
+        f.write(json.dumps(obj))
 
     @classmethod
     def load(cls, filename):
         """Create a new Bot from the file given."""
         f = open(filename, "r")
         bot = object.__new__(cls)
-        bot.hand, bot.valid_samples, action_samples = json.loads(f.read())
+        bot.hand, \
+            bot.valid_samples, \
+            action_samples, \
+            bot.actions = json.loads(f.read())
         input_size = len(format_input((0, 0), (0, 0)))
         bot.valid_net = NeuralNet(input_size, 2, 1)
         if bot.valid_samples[0]:
             bot.valid_net.train(*bot.valid_samples)
         if action_samples:
             bot.action_samples = action_samples
-            num_actions = len(bot.action_samples[1][0])
-            bot.has_actions = True
+            num_actions = len(bot.actions)
             bot.action_net = NeuralNet(input_size, 2, num_actions)
-            bot.action_net.train(*bot.action_samples)
-        else:
-            bot.has_actions = False
+            if bot.action_samples[0]:
+                bot.action_net.train(*bot.action_samples)
         return bot

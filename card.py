@@ -71,6 +71,7 @@ def tuple_from_s(s):
 
 
 def s_from_tuple(t):
+    """Convert a card tuple into its corresponding name."""
     rank, suit = t
     if rank == 12:
         s = "Ace"
