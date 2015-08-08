@@ -73,13 +73,18 @@ class Handler(object):
         play_dialog = self.builder.get_object("play_dialog")
         pass_dialog = self.builder.get_object("pass_dialog")
         invalid_dialog = self.builder.get_object("invalid_dialog")
+        empty_hand_dialog = self.builder.get_object("empty_hand_dialog")
         label = self.builder.get_object("instructions")
         self.prev_card = tuple_from_s(prev_card_entry.get_text())
         prev_card_entry.set_text("")
         if not self.prev_card:
             invalid_dialog.show()
             return
-        play = self.bot.play(self.prev_card)
+        try:
+            play = self.bot.play(self.prev_card)
+        except:
+            empty_hand_dialog.show()
+            return
         if play:
             dialog = play_dialog
             action_list = actionbox.get_children()
@@ -97,6 +102,11 @@ class Handler(object):
         else:
             dialog = pass_dialog
         dialog.show_all()
+
+    def cancel_play(self, button, event=None):
+        self.bot.add_card(self.card)
+        button.get_toplevel().hide()
+        return True
 
     def valid(self, button):
         """Event handler for valid button"""
@@ -147,13 +157,10 @@ class Handler(object):
                             actions)
         valid_button.set_active(False)
 
-    def quit(self, widget, event=None):
-        """Close GUI"""
-        widget.get_toplevel().destroy()
-
     def close(self, button, event=None):
         """Default handler for dialog buttons."""
         button.get_toplevel().hide()
+        return True
 
     def open_dialog(self, dialog):
         dialog.show()
@@ -164,7 +171,10 @@ class Handler(object):
         filechooser.hide()
 
     def save(self, button):
-        self.bot.save(self.filename)
+        if self.filename:
+            self.bot.save(self.filename)
+        else:
+            self.builder.get_object("save_dialog").show()
 
     def save_as(self, filechooser):
         self.filename = filechooser.get_filename()

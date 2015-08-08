@@ -56,6 +56,8 @@ class Bot(object):
         Bot plays the best card from its hand, or passes by returning
         False. If bot plays a card, it also returns a list of actions.
         """
+        if not self.hand:
+            raise Exception("Empty Hand")
         input = [format_input(card, prev_card) for card in self.hand]
         output = self.valid_net(input)
         index = np.argmax(output, axis=0)
@@ -83,7 +85,8 @@ class Bot(object):
         bot.hand, bot.valid_samples, action_samples = json.loads(f.read())
         input_size = len(format_input((0, 0), (0, 0)))
         bot.valid_net = NeuralNet(input_size, 2, 1)
-        bot.valid_net.train(*bot.valid_samples)
+        if bot.valid_samples[0]:
+            bot.valid_net.train(*bot.valid_samples)
         if action_samples:
             bot.action_samples = action_samples
             num_actions = len(bot.action_samples[1][0])
