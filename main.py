@@ -36,6 +36,7 @@ class Handler(object):
         self.bot = None
         self.card = None
         self.prev_card = None
+        self.filename = None
 
     def begin(self, button):
         """Event handler for beginning the application."""
@@ -154,8 +155,21 @@ class Handler(object):
         """Default handler for dialog buttons."""
         button.get_toplevel().hide()
 
-    def open_profile(self, button):
-        self.builder.get_object("open_dialog").show()
+    def open_dialog(self, dialog):
+        dialog.show()
+
+    def open_profile(self, filechooser):
+        self.filename = filechooser.get_filename()
+        self.bot = Bot.load(self.filename)
+        filechooser.hide()
+
+    def save(self, button):
+        self.bot.save(self.filename)
+
+    def save_as(self, filechooser):
+        self.filename = filechooser.get_filename()
+        self.bot.save(self.filename)
+        filechooser.hide()
 
 
 if __name__ == "__main__":

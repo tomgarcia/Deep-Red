@@ -67,16 +67,18 @@ class Bot(object):
             actions = []
         return self.hand.pop(index), actions
 
-    def save(self, f):
+    def save(self, filename):
         """Save the bot's data to the given file, so it can be reloaded later."""
+        f = open(filename, "w")
         if self.has_actions:
             f.write(json.dumps((self.hand, self.valid_samples, self.action_samples)))
         else:
             f.write(json.dumps((self.hand, self.valid_samples, False)))
 
     @classmethod
-    def load(cls, f):
+    def load(cls, filename):
         """Create a new Bot from the file given."""
+        f = open(filename, "r")
         bot = object.__new__(cls)
         bot.hand, bot.valid_samples, action_samples = json.loads(f.read())
         input_size = len(format_input((0, 0), (0, 0)))
