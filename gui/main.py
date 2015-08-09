@@ -10,19 +10,17 @@ from gui.play import PlayHandler
 class Handler(BaseHandler):
     """Class for holding signal handlers. Do not directly call methods."""
 
-    def __init__(self, app, actions):
+    def __init__(self, app):
         """Connect the signals"""
         self.app = app
         self.builder = Gtk.Builder.new_from_file("gui/main.ui")
         self.builder.connect_signals(self)
-        self.bot = Bot([], actions)
+        self.bot = Bot([])
         self.error_message = self.builder.get_object("error_message")
         self.error_dialog = self.builder.get_object("error_dialog")
         self.window = self.builder.get_object("window")
         self.file_handler = FileHandler(self)
         self.play_handler = PlayHandler(self)
-        for action in actions:
-            self.add_action(action)
         self.builder.get_object("file_menu").set_submenu(self.file_handler.menu)
         self.app.add_window(self.window)
         self.window.show_all()
@@ -104,3 +102,10 @@ class Handler(BaseHandler):
         sample_actionbox = self.builder.get_object("actionbox")
         sample_actionbox.foreach(sample_actionbox.remove)
         self.play_handler.clear_actions()
+
+    def new_action(self, entry):
+        action = entry.get_text()
+        entry.set_text("")
+        entry.get_toplevel().close()
+        self.bot.add_action(action)
+        self.add_action(action)

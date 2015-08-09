@@ -25,9 +25,8 @@ class Bot(object):
         self.valid_net = NeuralNet(input_size, 2, 1)
         self.valid_samples = ([], [])
         self.actions = actions
-        if len(self.actions) > 0:
-            self.action_samples = ([], [])
-            self.action_net = NeuralNet(input_size, 2, len(self.actions))
+        self.action_samples = ([], [])
+        self.action_net = NeuralNet(input_size, 2, len(self.actions))
 
     def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
@@ -39,10 +38,11 @@ class Bot(object):
         self.valid_samples[0].append(input)
         self.valid_samples[1].append([int(is_valid)])
         self.valid_net.train(*self.valid_samples)
-        if is_valid and self.actions:
+        if is_valid:
             self.action_samples[0].append(input)
             self.action_samples[1].append(actions)
-            self.action_net.train(*self.action_samples)
+            if self.actions:
+                self.action_net.train(*self.action_samples)
 
     def add_card(self, card):
         """
@@ -68,18 +68,26 @@ class Bot(object):
             actions = []
         return self.hand.pop(index), actions
 
+    def add_action(self, action):
+        self.actions.append(action)
+        for output in self.action_samples[1]:
+            output.append(0)
+        output_weight = self.action_net.weights[len(self.action_net.weights)-1]
+        rows, cols = output_weight.shape
+        new_weight = np.resize(output_weight, (rows, cols+1))
+        self.action_net.weights[len(self.action_net.weights)-1] = new_weight
+        if self.action_samples[0]:
+            self.action_net.train(*self.action_samples)
+
     def save(self, filename):
         """
         Save the bot's data to the given file, so it can be reloaded later.
         """
         f = open(filename, "w")
-        if self.actions:
-            obj = (self.hand,
-                   self.valid_samples,
-                   self.action_samples,
-                   self.actions)
-        else:
-            obj = (self.hand, self.valid_samples, False, False)
+        obj = (self.hand,
+               self.valid_samples,
+               self.action_samples,
+               self.actions)
         f.write(json.dumps(obj))
 
     @classmethod
@@ -89,16 +97,14 @@ class Bot(object):
         bot = object.__new__(cls)
         bot.hand, \
             bot.valid_samples, \
-            action_samples, \
+            bot.action_samples, \
             bot.actions = json.loads(f.read())
         input_size = len(format_input((0, 0), (0, 0)))
         bot.valid_net = NeuralNet(input_size, 2, 1)
+        num_actions = len(bot.actions)
+        bot.action_net = NeuralNet(input_size, 2, num_actions)
         if bot.valid_samples[0]:
             bot.valid_net.train(*bot.valid_samples)
-        if action_samples:
-            bot.action_samples = action_samples
-            num_actions = len(bot.actions)
-            bot.action_net = NeuralNet(input_size, 2, num_actions)
-            if bot.action_samples[0]:
-                bot.action_net.train(*bot.action_samples)
+        if bot.action_samples[0]:
+            bot.action_net.train(*bot.action_samples)
         return bot

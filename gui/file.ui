@@ -7,31 +7,31 @@
     <property name="can_focus">False</property>
     <child>
       <object class="GtkImageMenuItem" id="open">
-        <property name="label">gtk-open</property>
+        <property name="label">Open</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
+        <property name="use_stock">False</property>
         <signal name="activate" handler="show_dialog" object="open_dialog" swapped="no"/>
       </object>
     </child>
     <child>
       <object class="GtkImageMenuItem" id="save">
-        <property name="label">gtk-save</property>
+        <property name="label">Save</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
+        <property name="use_stock">False</property>
         <signal name="activate" handler="save" swapped="no"/>
       </object>
     </child>
     <child>
       <object class="GtkImageMenuItem" id="save_as">
-        <property name="label">gtk-save-as</property>
+        <property name="label">Save As</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
+        <property name="use_stock">False</property>
         <signal name="activate" handler="show_dialog" object="save_dialog" swapped="no"/>
       </object>
     </child>

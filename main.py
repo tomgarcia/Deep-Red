@@ -4,7 +4,7 @@ import sys
 
 from gi.repository import Gtk
 
-from gui.setup import SetupHandler
+from gui.main import Handler
 
 
 class App(Gtk.Application):
@@ -17,7 +17,7 @@ class App(Gtk.Application):
 
     def activate(self, app):
         """Start Application"""
-        SetupHandler(app)
+        Handler(app)
 
 
 if __name__ == "__main__":
