@@ -13,6 +13,7 @@ class FileHandler(BaseHandler):
         self.filename = None
         builder = Gtk.Builder.new_from_file("gui/file.ui")
         builder.connect_signals(self)
+        self.menu = builder.get_object("menu")
         self.save_dialog = builder.get_object("save_dialog")
         self.open_dialog = builder.get_object("open_dialog")
         self.save_dialog.set_transient_for(app.window)

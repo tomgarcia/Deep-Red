@@ -8,3 +8,6 @@ class BaseHandler(object):
         """Close the window, without deleting it."""
         button.get_toplevel().hide()
         return True
+
+    def show_dialog(self, dialog):
+        dialog.show()
