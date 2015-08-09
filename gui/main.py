@@ -15,14 +15,14 @@ class Handler(BaseHandler):
         self.app = app
         self.builder = Gtk.Builder.new_from_file("gui/main.ui")
         self.builder.connect_signals(self)
-        for action in actions:
-            self.add_action(action)
         self.bot = Bot([], actions)
         self.error_message = self.builder.get_object("error_message")
         self.error_dialog = self.builder.get_object("error_dialog")
         self.window = self.builder.get_object("window")
         self.file_handler = FileHandler(self)
         self.play_handler = PlayHandler(self)
+        for action in actions:
+            self.add_action(action)
         self.builder.get_object("file_menu").set_submenu(self.file_handler.menu)
         self.app.add_window(self.window)
         self.window.show_all()
@@ -96,13 +96,11 @@ class Handler(BaseHandler):
 
     def add_action(self, action):
         sample_actionbox = self.builder.get_object("actionbox")
-        play_actionbox = self.builder.get_object("actionbox1")
         sample_actionbox.add(Gtk.CheckButton(action))
-        play_actionbox.add(Gtk.CheckButton(action))
+        self.play_handler.add_action(action)
         sample_actionbox.show_all()
 
     def clear_actions(self):
         sample_actionbox = self.builder.get_object("actionbox")
-        play_actionbox = self.builder.get_object("actionbox1")
         sample_actionbox.foreach(sample_actionbox.remove)
-        play_actionbox.foreach(play_actionbox.remove)
+        self.play_handler.clear_actions()

@@ -19,8 +19,9 @@ class PlayHandler(BaseHandler):
     def show(self, card, prev_card, actions):
         self.card = card
         self.prev_card = prev_card
+        action_list = self.actionbox.get_children()
         for i in range(len(actions)):
-            self.actionbox[i].set_active(actions[i])
+            action_list[i].set_active(actions[i])
         label_text = ("Deep Red played " + s_from_tuple(card) +
                       ". Is this valid?")
         if len(self.actionbox) > 0:
@@ -50,3 +51,9 @@ class PlayHandler(BaseHandler):
         self.app.bot.add_card(self.card)
         dialog = button.get_toplevel()
         dialog.hide()
+
+    def add_action(self, action):
+        self.actionbox.add(Gtk.CheckButton(action))
+
+    def clear_actions(self):
+        self.actionbox.foreach(self.actionbox.remove)
