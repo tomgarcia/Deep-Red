@@ -6,4 +6,4 @@ __pycache__/
 *.swo
 
 # Glade swap file
-*.glade~
+gui/*ui~
