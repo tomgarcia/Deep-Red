@@ -3,10 +3,12 @@ from gi.repository import Gtk
 from gui.base import BaseHandler
 from card import s_from_tuple
 
+
 class PlayHandler(BaseHandler):
 
     def __init__(self, app):
         self.app = app
+        self.bot = app.bot
         self.card = None
         builder = Gtk.Builder.new_from_file("gui/play.ui")
         builder.connect_signals(self)
@@ -19,6 +21,9 @@ class PlayHandler(BaseHandler):
     def show(self, card, prev_card, actions):
         self.card = card
         self.prev_card = prev_card
+        self.actionbox.foreach(self.actionbox.remove)
+        for action in self.bot.actions:
+            self.actionbox.add(Gtk.CheckButton(action))
         action_list = self.actionbox.get_children()
         for i in range(len(actions)):
             action_list[i].set_active(actions[i])
@@ -34,26 +39,33 @@ class PlayHandler(BaseHandler):
 
     def cancel_play(self, button, _=None):
         """Cancel the play that just occured."""
-        self.app.bot.add_card(self.card)
+        self.bot.add_card(self.card)
         button.get_toplevel().hide()
         return True
 
     def valid(self, _):
         """Event handler for valid button"""
         actions = [int(b.get_active()) for b in self.actionbox.get_children()]
-        self.app.bot.add_sample(self.card, self.prev_card, True, actions)
+        self.bot.add_sample(self.card, self.prev_card, True, actions)
         dialog = self.actionbox.get_toplevel()
         dialog.hide()
 
     def invalid(self, button):
         """Event handler for invalid button"""
-        self.app.bot.add_sample(self.card, self.prev_card, False)
-        self.app.bot.add_card(self.card)
+        self.bot.add_sample(self.card, self.prev_card, False)
+        self.bot.add_card(self.card)
         dialog = button.get_toplevel()
         dialog.hide()
 
-    def add_action(self, action):
-        self.actionbox.add(Gtk.CheckButton(action))
-
-    def clear_actions(self):
+    def refresh_actions(self):
         self.actionbox.foreach(self.actionbox.remove)
+        for action in self.bot.actions:
+            self.actionbox.add(Gtk.CheckButton(action))
+        self.actionbox.show_all()
+
+    def new_action(self, entry):
+        action = entry.get_text()
+        entry.set_text("")
+        self.bot.add_action(action)
+        self.refresh_actions()
+        self.app.refresh_actions()

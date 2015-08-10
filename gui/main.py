@@ -1,4 +1,4 @@
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 from bot import Bot
 from card import tuple_from_s, s_from_tuple
@@ -19,9 +19,15 @@ class Handler(BaseHandler):
         self.error_message = self.builder.get_object("error_message")
         self.error_dialog = self.builder.get_object("error_dialog")
         self.window = self.builder.get_object("window")
-        self.file_handler = FileHandler(self)
         self.play_handler = PlayHandler(self)
-        self.builder.get_object("file_menu").set_submenu(self.file_handler.menu)
+        file_handler = FileHandler(self)
+        self.builder.get_object("file_menu").set_submenu(file_handler.menu)
+        css = Gtk.CssProvider()
+        css.load_from_path("css/input.css")
+        self.window.get_style_context().add_provider_for_screen(
+                Gdk.Screen.get_default(),
+                css,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.app.add_window(self.window)
         self.window.show_all()
 
@@ -29,21 +35,23 @@ class Handler(BaseHandler):
         """Event handler for added card."""
         new_card_entry = self.builder.get_object("new_card_entry")
         new_card = tuple_from_s(new_card_entry.get_text())
-        new_card_entry.set_text("")
         if new_card:
             self.bot.add_card(new_card)
+            new_card_entry.set_text("")
+            self.builder.get_object("add_frame").get_style_context().remove_class("invalid")
         else:
-            self.show_error("Invalid Card")
+            self.builder.get_object("add_frame").get_style_context().add_class("invalid")
 
     def play_card(self, _):
         """Event handler for play card button."""
         prev_card_entry = self.builder.get_object("prevcard_entry")
         label = self.builder.get_object("instructions")
         prev_card = tuple_from_s(prev_card_entry.get_text())
-        prev_card_entry.set_text("")
         if not prev_card:
-            self.show_error("Invalid Card")
+            self.builder.get_object("play_frame").get_style_context().add_class("invalid")
             return
+        prev_card_entry.set_text("")
+        self.builder.get_object("play_frame").get_style_context().remove_class("invalid")
         try:
             play = self.bot.play(prev_card)
         except:
@@ -73,11 +81,16 @@ class Handler(BaseHandler):
         valid_button = self.builder.get_object("valid_checkbox")
         prev_card = tuple_from_s(prev_card_entry.get_text())
         card = tuple_from_s(card_entry.get_text())
+        if not prev_card:
+            self.builder.get_object("prev_card_frame").get_style_context().add_class("invalid")
+        if not card:
+            self.builder.get_object("card_frame").get_style_context().add_class("invalid")
+        if not prev_card or not card:
+            return
         prev_card_entry.set_text("")
         card_entry.set_text("")
-        if not prev_card or not card:
-            self.show_error("Invalid Card")
-            return
+        self.builder.get_object("prev_card_frame").get_style_context().remove_class("invalid")
+        self.builder.get_object("card_frame").get_style_context().remove_class("invalid")
         actions = []
         for button in actionbox.get_children():
             actions.append(int(button.get_active()))
@@ -92,20 +105,15 @@ class Handler(BaseHandler):
         self.error_message.set_text(message)
         self.error_dialog.show()
 
-    def add_action(self, action):
-        sample_actionbox = self.builder.get_object("actionbox")
-        sample_actionbox.add(Gtk.CheckButton(action))
-        self.play_handler.add_action(action)
-        sample_actionbox.show_all()
-
-    def clear_actions(self):
+    def refresh_actions(self):
         sample_actionbox = self.builder.get_object("actionbox")
         sample_actionbox.foreach(sample_actionbox.remove)
-        self.play_handler.clear_actions()
+        for action in self.bot.actions:
+            sample_actionbox.add(Gtk.CheckButton(action))
+        sample_actionbox.show_all()
 
     def new_action(self, entry):
         action = entry.get_text()
         entry.set_text("")
-        entry.get_toplevel().close()
         self.bot.add_action(action)
-        self.add_action(action)
+        self.refresh_actions()

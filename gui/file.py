@@ -23,10 +23,7 @@ class FileHandler(BaseHandler):
         """Load bot from the file selected by the user."""
         self.filename = self.open_dialog.get_filename()
         self.app.bot = Bot.load(self.filename)
-        self.app.clear_actions()
-        if self.app.bot.actions:
-            for action in self.app.bot.actions:
-                self.app.add_action(action)
+        self.app.refresh_actions()
         self.open_dialog.hide()
 
     def save(self, _):
