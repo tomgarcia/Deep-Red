@@ -34,10 +34,13 @@ class Handler(BaseHandler):
     def add_card(self, _):
         """Event handler for added card."""
         new_card_entry = self.builder.get_object("new_card_entry")
+        handbox = self.builder.get_object("handbox")
         new_card = tuple_from_s(new_card_entry.get_text())
         if new_card:
             self.bot.add_card(new_card)
             new_card_entry.set_text("")
+            handbox.add(Gtk.Label(s_from_tuple(new_card)))
+            handbox.show_all()
             self.builder.get_object("add_frame").get_style_context().remove_class("invalid")
         else:
             self.builder.get_object("add_frame").get_style_context().add_class("invalid")
@@ -111,6 +114,13 @@ class Handler(BaseHandler):
         for action in self.bot.actions:
             sample_actionbox.add(Gtk.CheckButton(action))
         sample_actionbox.show_all()
+
+    def refresh_hand(self):
+        handbox = self.builder.get_object("handbox")
+        handbox.foreach(handbox.remove)
+        for card in self.bot.hand:
+            handbox.add(Gtk.Label(s_from_tuple(card)))
+        handbox.show_all()
 
     def new_action(self, entry):
         action = entry.get_text()

@@ -7,3 +7,6 @@ __pycache__/
 
 # Glade swap file
 gui/*ui~
+
+# Bot Profiles
+*.bot
