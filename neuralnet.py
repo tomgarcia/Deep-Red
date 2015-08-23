@@ -9,7 +9,7 @@ from scipy.special import expit as sigmoid
 class NeuralNet(object):
     """A multi-layer, feed-forward neural network."""
 
-    def __init__(self, *layers, lambda_=0.1):
+    def __init__(self, *layers, lambda_=0.1, is_analog=False):
         """
         Parameters are a series of integers, each representing
         the number of nodes in one layer of the network. The first
@@ -21,6 +21,7 @@ class NeuralNet(object):
             raise Exception("Neural Net requires at least 2 layers")
         self.lambda_ = lambda_
         self.weights = []
+        self.is_analog = is_analog
         for i in range(len(layers) - 1):
             # TODO Find correct range for initial values
             self.weights.append(
@@ -35,10 +36,14 @@ class NeuralNet(object):
         The output is also an ndarray, where each row is a sample,
         and each column is an output feature.
         """
+        if self.is_analog:
+            activate = lambda x: x
+        else:
+            activate = sigmoid
         for weight in self.weights:
             bias = np.ones((len(data), 1))
             # Sigmoid is the default activation function for neural nets
-            data = sigmoid(np.dot(np.hstack((bias, data)), weight))
+            data = activate(np.dot(np.hstack((bias, data)), weight))
         return data
 
     def train(self, input, expected_output):
@@ -57,7 +62,8 @@ class NeuralNet(object):
             cost, grad = NeuralNet.cost(NeuralNet.roll(x, shapes),
                                         self.lambda_,
                                         input,
-                                        expected_output)
+                                        expected_output,
+                                        self.is_analog)
             return cost, NeuralNet.unroll(grad)[0]
         result = minimize(fun, array, jac=True)
         self.weights = NeuralNet.roll(result.x, shapes)
@@ -79,7 +85,8 @@ class NeuralNet(object):
             return NeuralNet.cost(NeuralNet.roll(x, shapes),
                                   self.lambda_,
                                   input,
-                                  expected_output)[0]
+                                  expected_output,
+                                  self.is_analog)[0]
 
         def grad(x):
             """
@@ -90,12 +97,13 @@ class NeuralNet(object):
                 NeuralNet.cost(NeuralNet.roll(x, shapes),
                                self.lambda_,
                                input,
-                               expected_output)[1])[0]
+                               expected_output,
+                               self.is_analog)[1])[0]
 
         return check_grad(fun, grad, array)
 
     @staticmethod
-    def cost(weights, lambda_, input, expected_output):
+    def cost(weights, lambda_, input, expected_output, is_analog=False):
         """
         Find the cost of the given weights,
         based on input and the expected_output.
@@ -104,34 +112,39 @@ class NeuralNet(object):
         """
         input = np.asarray(input)
         expected_output = np.asarray(expected_output)
-        # Single row "matrixes" are one-dimensional, not two,
-        # so len() does not work as expected
+        if is_analog:
+            activate = lambda x: x
+        else:
+            activate = sigmoid
         num_samples = len(input)
         inputs = []
         results = []
         for weight in weights:
-            # Sigmoid is the default activation function for neural nets
             inputs.append(input)
             bias = np.ones((len(input), 1))
-            result = sigmoid(np.hstack((bias, input)).dot(weight))
+            result = activate(np.hstack((bias, input)).dot(weight))
             results.append(result)
             input = result
-        # This cost function is convex, unlike squared error,
-        # which makes gradient descent easier
-        # float_info.min is used to prevent an exception
-        # when result == 1 (only happens because of a rounding error)
-        error = (-expected_output * np.log(result) -
-                 (1 - expected_output) *
-                 np.log(1 - result + sys.float_info.min))
+        if is_analog:
+            error = np.power(expected_output - result, 2) / 2
+        else:
+            # This cost function is convex, unlike squared error,
+            # which makes gradient descent easier
+            # float_info.min is used to prevent an exception
+            # when result == 1 (only happens because of a rounding error)
+            error = (-expected_output * np.log(result) -
+                     (1 - expected_output) *
+                     np.log(1 - result + sys.float_info.min))
         cost = (error.sum() / num_samples +
                 lambda_ / (2 * num_samples) *
                 np.sum(np.square(NeuralNet.unroll(weights)[0])))
         delta = result - expected_output
         deltas = [delta]
         for i in reversed(range(0, len(weights) - 1)):
-            # g(x) (1- g(x)) is the derivative of sigmoid
-            delta = (delta.dot(weights[i+1][1:, ].transpose()) *
-                     results[i] * (1 - results[i]))
+            delta = delta.dot(weights[i+1][1:, ].transpose())
+            if not is_analog:
+                # g(x) (1- g(x)) is the derivative of sigmoid
+                delta *= results[i] * (1 - results[i])
             deltas.insert(0, delta)
         gradients = []
         for i in range(0, len(deltas)):
