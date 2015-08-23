@@ -26,7 +26,10 @@ class Bot(object):
         self.valid_samples = ([], [])
         self.actions = actions
         self.action_samples = ([], [])
-        self.action_net = NeuralNet(input_size, 2, len(self.actions))
+        self.action_net = NeuralNet(input_size, 
+                                    2,
+                                    len(self.actions),
+                                    is_analog=True)
 
     def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
@@ -64,6 +67,9 @@ class Bot(object):
             return False
         if self.actions:
             actions = np.rint(self.action_net([input[index]]))[0]
+            for i in range(len(actions)):
+                if actions[i] < 0:
+                    actions[i] = 0
         else:
             actions = []
         return self.hand.pop(index), actions
