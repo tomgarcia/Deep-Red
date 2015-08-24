@@ -23,10 +23,10 @@ class PlayHandler(BaseHandler):
         self.prev_card = prev_card
         self.actionbox.foreach(self.actionbox.remove)
         for action in self.bot.actions:
-            self.actionbox.add(Gtk.CheckButton(action))
+            self.actionbox.add(Gtk.SpinButton.new_with_range(0, 100, 1))
         action_list = self.actionbox.get_children()
         for i in range(len(actions)):
-            action_list[i].set_active(actions[i])
+            action_list[i].set_value(actions[i])
         label_text = ("Deep Red played " + s_from_tuple(card) +
                       ". Is this valid?")
         if len(self.actionbox) > 0:
@@ -45,7 +45,7 @@ class PlayHandler(BaseHandler):
 
     def valid(self, _):
         """Event handler for valid button"""
-        actions = [int(b.get_active()) for b in self.actionbox.get_children()]
+        actions = [int(b.get_value()) for b in self.actionbox.get_children()]
         self.bot.add_sample(self.card, self.prev_card, True, actions)
         dialog = self.actionbox.get_toplevel()
         dialog.hide()

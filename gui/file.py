@@ -24,7 +24,6 @@ class FileHandler(BaseHandler):
         self.filename = self.open_dialog.get_filename()
         self.app.bot = Bot.load(self.filename)
         self.app.refresh_actions()
-        self.app.refresh_hand()
         self.open_dialog.hide()
 
     def save(self, _):
