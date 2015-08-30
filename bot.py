@@ -26,7 +26,7 @@ class Bot(object):
         self.valid_samples = ([], [])
         self.actions = actions
         self.action_samples = ([], [])
-        self.action_net = NeuralNet(input_size, 
+        self.action_net = NeuralNet(input_size,
                                     2,
                                     len(self.actions),
                                     is_analog=True)

@@ -1,6 +1,7 @@
 from gi.repository import Gtk
 
 from gui.base import BaseHandler
+from gui.actionbox import ActionBox
 from card import s_from_tuple
 
 
@@ -12,24 +13,20 @@ class PlayHandler(BaseHandler):
         self.card = None
         builder = Gtk.Builder.new_from_file("gui/play.ui")
         builder.connect_signals(self)
-        self.actionbox = builder.get_object("actionbox")
+        self.actionbox = ActionBox(self.bot,
+                                   builder.get_object("actionbox"))
         self.label = builder.get_object("instructions")
         self.dialog = builder.get_object("play_dialog")
         self.dialog.set_transient_for(app.window)
-        pass
 
     def show(self, card, prev_card, actions):
         self.card = card
         self.prev_card = prev_card
-        self.actionbox.foreach(self.actionbox.remove)
-        for action in self.bot.actions:
-            self.actionbox.add(Gtk.SpinButton.new_with_range(0, 100, 1))
-        action_list = self.actionbox.get_children()
-        for i in range(len(actions)):
-            action_list[i].set_value(actions[i])
+        self.actionbox.refresh()
+        self.actionbox.set_actions(actions)
         label_text = ("Deep Red played " + s_from_tuple(card) +
                       ". Is this valid?")
-        if len(self.actionbox) > 0:
+        if len(actions) > 0:
             label_text += """
                           If the card is valid but the actions are not,
                           simply change the actions and then click valid.
@@ -45,7 +42,7 @@ class PlayHandler(BaseHandler):
 
     def valid(self, _):
         """Event handler for valid button"""
-        actions = [int(b.get_value()) for b in self.actionbox.get_children()]
+        actions = self.actionbox.get_actions()
         self.bot.add_sample(self.card, self.prev_card, True, actions)
         dialog = self.actionbox.get_toplevel()
         dialog.hide()
@@ -56,12 +53,6 @@ class PlayHandler(BaseHandler):
         self.bot.add_card(self.card)
         dialog = button.get_toplevel()
         dialog.hide()
-
-    def refresh_actions(self):
-        self.actionbox.foreach(self.actionbox.remove)
-        for action in self.bot.actions:
-            self.actionbox.add(Gtk.CheckButton(action))
-        self.actionbox.show_all()
 
     def new_action(self, entry):
         action = entry.get_text()
