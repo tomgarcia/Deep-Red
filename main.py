@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """A GUI for interacting with Deep Red"""
 import sys
 
