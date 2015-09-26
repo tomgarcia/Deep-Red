@@ -22,7 +22,7 @@ class Bot(object):
         """
         self.hand = hand
         input_size = len(format_input((0, 0), (0, 0)))
-        self.valid_net = NeuralNet(input_size, 2, 1)
+        self.valid_net = NeuralNet(input_size, 2, 1, lambda_=10)
         self.valid_samples = ([], [])
         self.actions = actions
         self.action_samples = ([], [])
