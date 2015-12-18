@@ -62,9 +62,12 @@ def percent_error(net, input, expected_output):
 
 input_size = len(format_input((0, 0), (0, 0)))
 print("Start of Play Test")
-samples = get_test_data(52, 170, 170, make_play_sample)
+samples = get_test_data(520, 1000, 1000, make_play_sample)
 nets = [
-        NeuralNet(input_size, 2, 1, lambda_=10),
+        NeuralNet(input_size, 2, 1, lambda_=0),
+        NeuralNet(input_size, 4, 1, lambda_=0),
+        NeuralNet(input_size, 8, 1, lambda_=0),
+        NeuralNet(input_size, 8, 4, 1, lambda_=0),
         ]
 for net in nets:
     net.train(*samples["training"])
@@ -85,10 +88,10 @@ print("\n")
 print("Start Of Action Test")
 samples = get_test_data(52, 170, 170, make_action_sample)
 nets = [
-        NeuralNet(input_size, 2, 5),
-        NeuralNet(input_size, 5, 5),
-        NeuralNet(input_size, 3, 5),
-        NeuralNet(input_size, 5, 5),
+        #NeuralNet(input_size, 2, 5),
+        #NeuralNet(input_size, 5, 5),
+        #NeuralNet(input_size, 3, 5),
+        #NeuralNet(input_size, 5, 5),
         ]
 for net in nets:
     net.train(*samples["training"])

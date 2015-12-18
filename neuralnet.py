@@ -131,10 +131,10 @@ class NeuralNet(object):
             # This cost function is convex, unlike squared error,
             # which makes gradient descent easier
             # float_info.min is used to prevent an exception
-            # when result == 1 (only happens because of a rounding error)
-            error = (-expected_output * np.log(result) -
-                     (1 - expected_output) *
-                     np.log(1 - result + sys.float_info.min))
+            # when result == 1 or 0 (only happens because of a rounding error)
+            error = (-expected_output * np.log(result + sys.float_info.min) -
+                    (1 - expected_output) *
+                    np.log(1 - result + sys.float_info.min))
         cost = (error.sum() / num_samples +
                 lambda_ / (2 * num_samples) *
                 np.sum(np.square(NeuralNet.unroll(weights)[0])))
