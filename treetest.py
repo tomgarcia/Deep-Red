@@ -32,7 +32,7 @@ def make_play_sample(card, prev_card):
         is_correct = 0
     return [is_correct, *card, *prev_card, rank, suite]
 
-samples = get_test_data(10, 1000, 1000, make_play_sample)
+samples = get_test_data(100, 1000, 1000, make_play_sample)
 d = DecisionTree(samples["training"], [2, 13, 4, 13, 4, 2, 2])
 for key in samples.keys():
     print(key)

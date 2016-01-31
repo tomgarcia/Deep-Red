@@ -19,7 +19,7 @@ class DecisionTree:
         min_entropy = sys.maxsize
         for i in indices:
             avg_entropy = 0
-            for value in schema[1:]:
+            for value in range(schema[i]):
                 subset = data[data[:, i] == value]
                 if len(subset) == 0:
                     continue
