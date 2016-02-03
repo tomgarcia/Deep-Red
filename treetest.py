@@ -16,34 +16,20 @@ def get_test_data(num_training, num_validation, fun):
 
 
 def make_play_sample(card, prev_card):
-    if prev_card[0] < card[0]:
-        rank = 0
-    elif prev_card[0] == card[0]:
-        rank = 1
-    else:
-        rank = 2
-    suite = prev_card[1] == card[1]
     if prev_card[0] == card[0]:
-        is_correct = 1
+        is_correct = True
     elif prev_card[1] == card[1]:
         if prev_card[0] == 3 and card[0] < 3:
             is_correct = 0
         elif prev_card[0] == 5 and card[0] != 5:
-            is_correct = 0
+            is_correct = False
         else:
-            is_correct = 1
+            is_correct = True
     else:
-        is_correct = 0
-    return [is_correct, *card, *prev_card, rank, suite]
+        is_correct = False
+    return [is_correct, *format_input(card, prev_card)]
 
 def make_action_sample(card, prev_card):
-    if prev_card[0] < card[0]:
-        rank = 0
-    elif prev_card[0] == card[0]:
-        rank = 1
-    else:
-        rank = 2
-    suite = prev_card[1] == card[1]
     actions = [0, 0, 0, 0, 0]
     if prev_card[0] == card[0]:
         actions[0] = 1
@@ -55,7 +41,7 @@ def make_action_sample(card, prev_card):
         actions[3] = 1
     if card[0] == 0:
         actions[4] = 1
-    return [actions, *card, *prev_card, rank, suite]
+    return [actions, *format_input(card, prev_card)]
 
 def percent_correct(samples, schema):
     d = DecisionTree(samples["training"], schema)

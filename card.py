@@ -2,29 +2,18 @@
 from random import randrange
 
 
-def format_card(card):
-    """
-    Transform a simple representation (rank, suit) of a card
-    into a format that is more useful for a neuralnet.
-    Rank should be an integer from 0-12, and suit should be
-    an integer from 0-3.
-    """
-    rank = [0, ] * 13
-    suit = [0, 0, 0, 0]
-    rank[card[0]] = 1
-    suit[card[1]] = 1
-    return list(card) + rank + suit
-
-
 def format_input(card, prev_card):
     """
-    Format two cards in a manner that the neural net can understand them.
+    Format two cards in a manner that the decision tree can understand them.
     """
-    card = format_card(card)
-    prev_card = format_card(prev_card)
-    matching = [int(card[0] == prev_card[0]),
-                int(card[1] == prev_card[1])]
-    return card + prev_card + matching
+    if prev_card[0] < card[0]:
+        rank = 0
+    elif prev_card[0] == card[0]:
+        rank = 1
+    else:
+        rank = 2
+    suite = prev_card[1] == card[1]
+    return card + prev_card + (rank, suite)
 
 
 def deal(num_cards):

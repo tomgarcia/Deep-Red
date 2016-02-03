@@ -1,11 +1,12 @@
 """
 Programmer-friendly interface to the neural network.
 """
+#TODO: play()
 import json
 
 import numpy as np
 
-from neuralnet import NeuralNet
+from decisiontree import DecisionTree
 from card import format_input
 
 
@@ -21,15 +22,10 @@ class Bot(object):
         that it can perform.
         """
         self.hand = hand
-        input_size = len(format_input((0, 0), (0, 0)))
-        self.valid_net = NeuralNet(input_size, 2, 1, lambda_=10)
-        self.valid_samples = ([], [])
+        self.valid_samples = []
         self.actions = actions
-        self.action_samples = ([], [])
-        self.action_net = NeuralNet(input_size,
-                                    2,
-                                    len(self.actions),
-                                    is_analog=True)
+        # Create one list per action
+        self.action_samples = [[]] * len(self.actions)
 
     def add_sample(self, card, prev_card, is_valid, actions=[]):
         """
@@ -37,15 +33,11 @@ class Bot(object):
         not needed if the move is invalid, and must always be a list,
         even if there is only one action.
         """
-        input = format_input(card, prev_card)
-        self.valid_samples[0].append(input)
-        self.valid_samples[1].append([int(is_valid)])
-        self.valid_net.train(*self.valid_samples)
+        sample = format_input(card, prev_card)
+        self.valid_samples.append([is_valid, *sample])
         if is_valid:
-            self.action_samples[0].append(input)
-            self.action_samples[1].append(actions)
-            if self.actions:
-                self.action_net.train(*self.action_samples)
+            for i in range(len(actions)):
+                self.action_samples[i].append([actions[i], *sample])
 
     def add_card(self, card):
         """
@@ -76,14 +68,9 @@ class Bot(object):
 
     def add_action(self, action):
         self.actions.append(action)
-        for output in self.action_samples[1]:
-            output.append(0)
-        output_weight = self.action_net.weights[len(self.action_net.weights)-1]
-        rows, cols = output_weight.shape
-        new_weight = np.resize(output_weight, (rows, cols+1))
-        self.action_net.weights[len(self.action_net.weights)-1] = new_weight
-        if self.action_samples[0]:
-            self.action_net.train(*self.action_samples)
+        for sample in self.valid_samples:
+            if sample[0] == True:
+                self.action_samples[len(self.actions)-1].append([0, *sample])
 
     def save(self, filename):
         """
@@ -105,12 +92,4 @@ class Bot(object):
             bot.valid_samples, \
             bot.action_samples, \
             bot.actions = json.loads(f.read())
-        input_size = len(format_input((0, 0), (0, 0)))
-        bot.valid_net = NeuralNet(input_size, 2, 1)
-        num_actions = len(bot.actions)
-        bot.action_net = NeuralNet(input_size, 2, num_actions)
-        if bot.valid_samples[0]:
-            bot.valid_net.train(*bot.valid_samples)
-        if bot.action_samples[0]:
-            bot.action_net.train(*bot.action_samples)
         return bot
