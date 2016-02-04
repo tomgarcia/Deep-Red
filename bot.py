@@ -1,7 +1,6 @@
 """
 Programmer-friendly interface to the neural network.
 """
-#TODO: play()
 import json
 
 import numpy as np
@@ -52,22 +51,34 @@ class Bot(object):
         """
         if not self.hand:
             raise Exception("Empty Hand")
-        input = [format_input(card, prev_card) for card in self.hand]
-        output = self.valid_net(input)
-        index = np.argmax(output, axis=0)
-        if output[index] < .5:
+        cards = [format_input(card, prev_card) for card in self.hand]
+        output = []
+        schema = [2, 13, 4, 13, 4, 3, 2]
+        if not self.valid_samples:
             return False
-        if self.actions:
-            actions = np.rint(self.action_net([input[index]]))[0]
-            for i in range(len(actions)):
-                if actions[i] < 0:
-                    actions[i] = 0
-        else:
-            actions = []
-        return self.hand.pop(index), actions
+        tree = DecisionTree(self.valid_samples, schema)
+        for card in cards:
+            output.append(tree(card))
+        card = False
+        for i in range(len(cards)):
+            if output[i]:
+                card = self.hand.pop(i)
+                break
+        if not card:
+            return False
+        actions = []
+        for i in range(len(self.actions)):
+            max_class = max(
+                    [sample[0] for sample in self.action_samples[i]])
+            schema[0] = max_class
+            action_tree = DecisionTree(self.action_samples[i], schema)
+            actions.append(action_tree(card))
+        return card, actions
+
 
     def add_action(self, action):
         self.actions.append(action)
+        self.action_samples.append([])
         for sample in self.valid_samples:
             if sample[0] == True:
                 self.action_samples[len(self.actions)-1].append([0, *sample])

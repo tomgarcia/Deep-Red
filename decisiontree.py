@@ -9,6 +9,7 @@ class DecisionTree:
 
     @staticmethod
     def make_node(data, schema, indices):
+        data = np.array(data)
         cls = data[0][0]
         if np.all(data[:,0] == cls):
             return cls

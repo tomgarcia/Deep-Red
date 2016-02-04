@@ -1,36 +1,33 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 import numpy as np
-
-from neuralnet import NeuralNet
+from decisiontree import DecisionTree
 from card import deal, format_input
 
-
-def get_test_data(num_training, num_validation, num_test, fun):
-    samples = {"training": ([], []), "validation": ([], []), "test": ([], [])}
+def get_test_data(num_training, num_validation, fun):
+    samples = {"training": [], "validation": []}
     num_samples = {"training": num_training,
-                   "validation": num_validation,
-                   "test": num_test}
+                   "validation": num_validation}
     for key, count in num_samples.items():
         for i in range(count):
-            for j in range(2):
-                samples[key][j].append(fun(*deal(2))[j])
+            samples[key].append(fun(*deal(2)))
+    for key in samples.keys():
+        samples[key] = np.array(samples[key])
     return samples
 
 
 def make_play_sample(card, prev_card):
     if prev_card[0] == card[0]:
-        is_correct = 1
+        is_correct = True
     elif prev_card[1] == card[1]:
         if prev_card[0] == 3 and card[0] < 3:
             is_correct = 0
         elif prev_card[0] == 5 and card[0] != 5:
-            is_correct = 0
+            is_correct = False
         else:
-            is_correct = 1
+            is_correct = True
     else:
-        is_correct = 0
-    return [format_input(card, prev_card), [is_correct]]
-
+        is_correct = False
+    return [is_correct, *format_input(card, prev_card)]
 
 def make_action_sample(card, prev_card):
     actions = [0, 0, 0, 0, 0]
@@ -44,67 +41,30 @@ def make_action_sample(card, prev_card):
         actions[3] = 1
     if card[0] == 0:
         actions[4] = 1
-    return [format_input(card, prev_card), actions]
+    return [actions, *format_input(card, prev_card)]
 
+def percent_correct(samples, schema):
+    d = DecisionTree(samples["training"], schema)
+    for key in samples.keys():
+        print(key)
+        correct = 0
+        for sample in samples[key]:
+            if d(sample[1:]) == sample[0]:
+                correct += 1
+        print((correct / len(samples[key])) * 100)
 
-def percent_error(net, input, expected_output):
-    num_wrong = 0
-    total = 0
-    output = net(input)
-    output = np.rint(net(input))
-    for i in range(len(output)):
-        total += len(output[i])
-        for j in range(len(output[i])):
-            if output[i][j] != expected_output[i][j]:
-                num_wrong += 1
-    return (num_wrong / total) * 100
+print("Play Test")
+samples = get_test_data(100, 100000, make_play_sample)
+percent_correct(samples, [2, 13, 4, 13, 4, 3, 2])
 
+print("Action Test")
+for i in range(5):
+    print("Action #" + str(i+1))
 
-input_size = len(format_input((0, 0), (0, 0)))
-print("Start of Play Test")
-samples = get_test_data(520, 1000, 1000, make_play_sample)
-nets = [
-        NeuralNet(input_size, 2, 1, lambda_=0),
-        NeuralNet(input_size, 4, 1, lambda_=0),
-        NeuralNet(input_size, 8, 1, lambda_=0),
-        NeuralNet(input_size, 8, 4, 1, lambda_=0),
-        ]
-for net in nets:
-    net.train(*samples["training"])
-    print("---")
-    print("Training")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["training"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["training"])[0]))
-    print("Validation")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["validation"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["validation"])[0]))
-    print("Test")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["test"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["test"])[0]))
-print("\n")
-print("Start Of Action Test")
-samples = get_test_data(52, 170, 170, make_action_sample)
-nets = [
-        #NeuralNet(input_size, 2, 5),
-        #NeuralNet(input_size, 5, 5),
-        #NeuralNet(input_size, 3, 5),
-        #NeuralNet(input_size, 5, 5),
-        ]
-for net in nets:
-    net.train(*samples["training"])
-    print("---")
-    print("Training")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["training"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["training"])[0]))
-    print("Validation")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["validation"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["validation"])[0]))
-    print("Test")
-    print("Error %: {}, Cost: {}".format(
-        round(percent_error(net, *samples["test"]), 2),
-        NeuralNet.cost(net.weights, net.lambda_, *samples["test"])[0]))
+    def f(card, prev_card):
+        sample = make_action_sample(card, prev_card)
+        cls = sample[0][1]
+        return [cls, *sample[1:]]
+
+    samples = get_test_data(100, 100000, f)
+    percent_correct(samples, [4, 13, 4, 13, 4, 3, 2])
